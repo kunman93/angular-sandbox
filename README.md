@@ -31,4 +31,7 @@ when inspecting `index.html` with the browser tool - these script imports are
 present and contains our own code too. The first code which gets executed is
 `main.ts` which then passes `AppModule`. `AppModule` tells Angular that there
 is an `AppComponent` when it tries to start itself. Angular then analyses the
-`AppComponent` with its *selector* and *templateUrl* and uses it in `index.html`.
+`AppComponent` with its *selector* and *templateUrl* and uses it in
+`index.html`. `AppComponent` is special component. it serves as a root
+component Angular bootstraps with. Other components will be added in
+`AppComponent`.
