@@ -46,14 +46,14 @@ to bundle different pieces e.g. Components of an app into packages.
 
 #### AppModule
 
-*@NgModule*: *@NgModule* is a decorator imported from '@angular/core'. In
-there, there are four properties (*declarations, imports, providers and
-bootstrap'*). *bootstrap* property will only contain *AppComponent*. To
-register a new Component e.g. *ServerComponent*, it needs to be added to the
-*declarations* property as shown below, because by default Angular will not
-scan all the files. *ServerComponent* needs also to be imported; the *.ts*
-extension is not needed, *WebPack* adds it. *imports* property allows to add
-new modules to *AppModule*. To make *AppModule* leaner, separate modules can be
+`@NgModule`: `@NgModule` is a decorator imported from '@angular/core'. In
+there, there are four properties (`declarations`, `imports`, `providers` and
+`bootstrap`). `bootstrap` property will only contain `AppComponent`. To
+register a new Component e.g. `ServerComponent`, it needs to be added to the
+`declarations` property as shown below, because by default Angular will not
+scan all the files. `ServerComponent` needs also to be imported; the *.ts*
+extension is not needed, `WebPack` adds it. *imports* property allows to add
+new modules to `AppModule`. To make `AppModule` leaner, separate modules can be
 created to outsource some stuff into other modules.
 
 ``` typescript
@@ -76,3 +76,15 @@ import { ServerComponent } from './server/server.component';
 })
 export class AppModule { }
 ```
+
+#### Component
+
+A Component e.g. `ServersComponent` can be created manually or by using the
+following command. This command creates the folder `servers` with respective
+files. The newly created Component will also be automatically added to
+`AppModule`.
+
+```bash
+ng g c servers
+```
+
