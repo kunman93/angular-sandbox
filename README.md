@@ -88,3 +88,23 @@ files. The newly created Component will also be automatically added to
 ng g c servers
 ```
 
+`@Component`: `@Component` is a decorator, which has *selector*,
+*templateUrl/template* and *styleUrls/styles*.  The *templateUrl* references to
+an external .html file, whereas the *styleUrls* to an external .css file. The
+alternatives are *template* and *styles* properties, which serves the same
+purpose with the notion you can do it inline e.g in `AppComponent`. The
+*selector* instructs Angular to instantiate this component any time the tag
+<app-servers> appears in a template as depicted below.
+
+``` typescript
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-servers',
+  templateUrl: './servers.component.html',
+  styleUrls: ['./servers.component.css']
+})
+export class ServersComponent {
+
+}
+```
