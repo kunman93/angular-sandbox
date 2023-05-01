@@ -123,5 +123,25 @@ event binding.
 - Two-way-binding: Here, a user is able to react to events and output something
   at the same time.
 
+### String Interpolation 
 
+Example of string interpolation in `server.component.html`:
 
+```html
+<p>{{ 'Server' }} with ID {{ serverId}} {{ getServerStatus() }}</p>
+```
+
+The variable and the method in the curly brackets are defined in
+`server.component.ts`:
+
+```typescript
+...
+export class ServerComponent {
+    serverId: number = 10;
+    serverStatus: string = 'offline';
+
+    getServerStatus() {
+        return this.serverStatus;
+    }
+}
+```
