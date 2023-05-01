@@ -177,3 +177,14 @@ export class ServersComponent {
 }
 ```
 
+### Event binding
+
+Bind to an event with an event binding syntax; the syntax consists of a target
+event name within parentheses as shown below:
+
+```typescript
+<button (click)="onSave()">Save</button>
+```
+
+The event binding listens for the button's click events and calls the
+component's `onSave()` method whenever a click occurs.
