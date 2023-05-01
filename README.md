@@ -188,3 +188,30 @@ event name within parentheses as shown below:
 
 The event binding listens for the button's click events and calls the
 component's `onSave()` method whenever a click occurs.
+
+#### Handling events
+
+A common way to handle events is to pass the event object, `$event`, to the
+method handling the event `onUpdateServerName($event)`:
+
+```html
+<p>Servers work!</p>
+<label>Server name</label>
+<input
+    type="text"
+    class="form-control"
+    (input)="onUpdateServerName($event)"
+/>
+<p>{{ serverName }}</p>
+```
+
+The method is declared in the corresponding component:
+
+```typescript
+onUpdateServerName(event: Event) {
+    console.log(event);
+    this.serverName = (<HTMLInputElement>event.target).value;
+}
+```
+
+Notice that the casting is required to retrieve the value.
