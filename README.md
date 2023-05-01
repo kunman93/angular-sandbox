@@ -215,3 +215,46 @@ onUpdateServerName(event: Event) {
 ```
 
 Notice that the casting is required to retrieve the value.
+
+### Two-Way-Binding
+
+`FormsModule` is required for Two-Way-Binding:
+
+```typescript
+...
+import { FormsModule } from '@angular/forms';
+...
+
+@NgModule({
+  ...
+  imports: [
+    BrowserModule,
+    FormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+Below, the *directive* `ngModel` is used for Two-Way-Binding. With
+Two-Way-Binding, we combine event and property binding, hence `[(ngModel)]`. We
+can then set `[(ngModel)]` equal to property in the Typescript code inside the
+component. With Two-Way-Binding, the `serverName` will be updated when the
+input event is triggered. The value of the input element will also be updated
+when the `serverName` changes somewhere else:
+
+```html
+<!-- One-Way-Binding -->
+<input
+    type="text"
+    class="form-control"
+    (input)="onUpdateServerName($event)"
+/>
+<!-- Two-Way-Binding -->
+<input
+    type="text"
+    class="form-control"
+    [(ngModel)]="serverName"
+/>
+```
