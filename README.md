@@ -108,3 +108,20 @@ export class ServersComponent {
 
 }
 ```
+
+## What is databinding?
+
+Databinding is the communication the communication between the TypeScript code
+(Business Logic) and Template (HTML) what the user sees. There are different
+ways of communication e.g.:
+
+- One-way-binding: output data from TypeScript code to Template (HTML), can be
+  done with *String Interpolation* and *Property binding*. 
+- One-way-binding: user clicks a button on a Template (HTML), we want to
+  trigger something in our TypeScript code. We can react to user events with
+event binding.
+- Two-way-binding: Here, a user is able to react to events and output something
+  at the same time.
+
+
+
