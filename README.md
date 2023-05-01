@@ -145,3 +145,35 @@ export class ServerComponent {
     }
 }
 ```
+
+### Property binding 
+
+Property binding in Angular helps you set values for properties of HTML
+elements or directives, such as toggle button features.
+
+To assign a value to a target property e.g. `disabled` square brackets are
+required as shown below in `servers.component.html`:
+
+```html
+<p>Servers work!</p>
+<button class="btn btn-primary" [disabled]="!allowNewServer">Add Server</button>
+<app-server />
+<app-server />
+```
+
+`allowNewServer` is defined in `servers.component.ts`:
+
+```typescript
+...
+export class ServersComponent {
+  allowNewServer = false;
+
+  constructor() {
+    setTimeout(() => {
+      this.allowNewServer = true;
+    }, 2000)
+  }
+
+}
+```
+
