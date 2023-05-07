@@ -317,3 +317,34 @@ export class ServerComponent {
 ...
 }
 ```
+
+### `ngFor` directive
+
+`ngFor` is a structural directive, which loops through all the elements of the
+array `servers` and assign the individual element to the dynamic variable
+`server`. In this example multiple *app servers* are created as the `servers` array grows.
+
+```html
+<button 
+    ...
+    (click)="onCreateServer()">Add Server</button>
+...
+<app-server *ngFor="let server of servers"/>
+```
+
+```typescript
+...
+export class ServersComponent {
+  ...
+  serverName = "Initial server name";
+  isServerCreated = false;
+  servers = ['Testserver', 'Testserver 2'];
+  ...
+  onCreateServer() {
+    this.isServerCreated = true;
+    this.servers.push(this.serverName);
+    this.serverCreationStatus = `Server ${this.serverName} was created!`
+  }
+  ...
+}
+```
