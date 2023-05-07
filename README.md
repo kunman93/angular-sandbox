@@ -272,9 +272,22 @@ This directive works as an *if-statement*. The star in `*ngIf` indicates that
 it is a structural directive which changes the structure of the DOM. The
 example below adds the paragraph to the DOM or removes it from the DOM.
 
-```typescript
+```html
 ...
 <p *ngIf="isServerCreated">{{ serverCreationStatus }}</p>
 ...
 ```
 
+### `ngStyle` directive
+
+Unlike structural directives, attribute directives e.g. `ngStyle` do not add or
+remove elements. They only change the element they were placed in. `ngStyle`
+can be used as shown in the following example:
+
+```html
+<p [ngStyle]="{backgroundColor: getServerStatusColor()}">{{ 'Server' }} with ID {{ serverId}} {{ getServerStatus() }}</p>
+```
+
+For `ngStyle` to work, property binding must be used. The square brackets
+indicate that we want to bind the directive `ngStyle` to some property which
+happens to also be `ngStyle`.
