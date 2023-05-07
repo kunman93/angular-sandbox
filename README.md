@@ -291,3 +291,29 @@ can be used as shown in the following example:
 For `ngStyle` to work, property binding must be used. The square brackets
 indicate that we want to bind the directive `ngStyle` to some property which
 happens to also be `ngStyle`.
+
+### `ngClass` directive
+
+`ngClass` works only with property binding, which takes a JavaScript object.
+The keys are the CSS class names e.g. `online` and the value are the conditions
+determining whether the class should be attached or not.
+
+```html
+<p [ngStyle]="{backgroundColor: getServerStatusColor()}">{{ 'Server' }} with ID {{ serverId}} {{ getServerStatus() }}</p>
+```
+
+```typescript
+...
+@Component({
+    selector: 'app-server',
+    templateUrl: './server.component.html',
+    styles: [`
+        .online {
+            color: white;
+        }
+    `]
+})
+export class ServerComponent {
+...
+}
+```
