@@ -258,3 +258,23 @@ when the `serverName` changes somewhere else:
     [(ngModel)]="serverName"
 />
 ```
+
+## Directives
+
+Directives are Instructions in the DOM. Components are kind of directives with
+templates. By placing  e.g. the selector of a component, we are instructing
+angular to add the the content of the template and the business logic, where
+the selector is used. You can also create custom directives or use the built-in directives such as `ngIf`, `ngClass`.
+
+### `ngIf` directive
+
+This directive works as an *if-statement*. The star in `*ngIf` indicates that
+it is a structural directive which changes the structure of the DOM. The
+example below adds the paragraph to the DOM or removes it from the DOM.
+
+```typescript
+...
+<p *ngIf="isServerCreated">{{ serverCreationStatus }}</p>
+...
+```
+
