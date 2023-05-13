@@ -348,3 +348,69 @@ export class ServersComponent {
   ...
 }
 ```
+
+## Custom Bindings
+
+### Binding to Custom Properties
+
+By default all properties of components are only accessible inside these
+components, therefore not bindable from outside. For a parent component e.g.
+`AppComponent` to bind to a custom property e.g. `element` of a
+`ServerElementComponent`, the decorator `@Input()` needs to be added to the
+specific property. 
+
+#### Parent Component: `AppComponent`
+
+```typescript
+...
+export class AppComponent {
+  serverElements = [
+    {
+      type: 'server',
+      name: 'Testserver',
+      content: 'Just a test!'
+    }
+  ];
+}
+
+```
+
+```html
+<div class="container">
+  ...
+    <div class="col-xs-12">
+      <app-server-element 
+        *ngFor="let serverElement of serverElements" 
+        [element]="serverElement"></app-server-element>
+    </div>
+ ...
+</div>
+
+```
+
+#### Child Component: `ServerElementComponent`
+
+```typescript
+import { ...,  Input} from '@angular/core';
+...
+export class ServerElementComponent implements OnInit {
+  @Input() element: {
+    type: string,
+    name: string,
+    content: string
+  };
+  ...
+}
+``` 
+
+```html
+<div class="panel panel-default">
+    <div class="panel-heading">{{ element.name }}</div>
+    <div class="panel-body">
+        <p>
+            <strong *ngIf="element.type === 'server'" style="color: red">{{ element.content }}</strong>
+            <em *ngIf="element.type === 'blueprint'">{{ element.content }}</em>
+        </p>
+    </div>
+</div>
+```
