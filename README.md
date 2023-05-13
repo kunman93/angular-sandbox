@@ -414,3 +414,111 @@ export class ServerElementComponent implements OnInit {
     </div>
 </div>
 ```
+
+### Binding to Custom Events
+
+What happens when we have `CockpitComponent` and something changes in there and
+we want to inform our parent `AppComponent`? In the example below, we want to
+inform the `AppComponent`, that a new server or a blueprint was created by the `CockpitComponent`. 
+
+#### Parent Component: `AppComponent`
+
+The properties `serverCreated` and `blueprintCreated` call the respective
+functions of `onServerAdded($event)` and `onBlueprintAdded($event)`, when an event was emitted from `CockpitComponent`. 
+
+```typescript
+...
+export class AppComponent {
+  serverElements = [{...}];
+
+  onServerAdded(serverData : {
+    serverName: string, 
+    serverContent: string
+  }) {
+    this.serverElements.push({
+      type: 'server',
+      name: serverData.serverName,
+      content: serverData.serverContent
+    });
+  }
+
+  onBlueprintAdded(blueprintData : {
+    serverName: string, 
+    serverContent: string
+  }) {
+    this.serverElements.push({
+      type: 'blueprint',
+      name: blueprintData.serverName,
+      content: blueprintData.serverContent
+    });
+  }
+}
+```
+
+```html
+<div class="container">
+  <app-cockpit 
+    (serverCreated)="onServerAdded($event)"
+    (blueprintCreated)="onBlueprintAdded($event)"></app-cockpit>
+  <hr>
+  <div class="row">
+    <div class="col-xs-12">
+      <app-server-element 
+        *ngFor="let serverElement of serverElements" 
+        [element]="serverElement"></app-server-element>
+    </div>
+  </div>
+</div>
+```
+
+#### Child Component: `CockpitComponent`
+
+In `CockpitComponent`, we define two properties `serverCreated` and
+`blueprintCreated` which can emit events. The functions `onAddServer()` and
+`onAddBlueprint()` "emit" the events. To make the properties listenable from
+outside, `@Output()` decoration needs to be prepended to `serverCreated` and
+`blueprintCreated`. 
+
+```typescript
+import { EventEmitter, Output, ... } from '@angular/core';
+...
+export class CockpitComponent implements OnInit {
+  @Output() serverCreated = new EventEmitter<{serverName: string, serverContent: string}>();
+  @Output() blueprintCreated = new EventEmitter<{serverName: string, serverContent: string}>();
+  newServerName = '';
+  newServerContent = '';
+  ...
+  onAddServer() {
+    this.serverCreated.emit({
+      serverName: this.newServerName,
+      serverContent: this.newServerContent
+    });
+  }
+
+  onAddBlueprint() {
+    this.blueprintCreated.emit({
+      serverName: this.newServerName,
+      serverContent: this.newServerContent
+    });
+  }
+}
+```
+
+```html
+<div class="row">
+  <div class="col-xs-12">
+    <p>Add new Servers or blueprints!</p>
+    <label>Server Name</label>
+    <input type="text" class="form-control" [(ngModel)]="newServerName">
+    <label>Server Content</label>
+    <input type="text" class="form-control" [(ngModel)]="newServerContent">
+    <br>
+    <button
+      class="btn btn-primary"
+      (click)="onAddServer()">Add Server</button>
+    <button
+      class="btn btn-primary"
+      (click)="onAddBlueprint()">Add Server Blueprint</button>
+  </div>
+</div>
+```
