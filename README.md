@@ -613,3 +613,10 @@ closing tag.
 </app-server-element>
 ```
 
+## Component lifecycle and lifecycle hooks
+
+After your application instantiates a component or directive by calling its
+constructor, Angular calls the hook methods e.g. ngOnInit() you have
+implemented at the appropriate point in the lifecycle of that instance. To
+learn more see [Lifecycle Hooks](https://angular.io/guide/lifecycle-hooks).
+
