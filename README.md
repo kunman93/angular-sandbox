@@ -543,3 +543,37 @@ export class ServerElementComponent implements OnInit {
 }
 ```
 
+## Local References
+
+Sometimes instead of using Two-Way-Binding, local references e.g.
+`#serverNameInput` can be used. The local reference can then be passed e.g. to
+the function `onAddServer(...)`.
+
+```html
+<div class="row">
+  <div class="col-xs-12">
+    ...
+    <!-- <input type="text" class="form-control" [(ngModel)]="newServerName"> -->
+    <input type="text" class="form-control" #serverNameInput>
+    ...
+    <button
+      class="btn btn-primary"
+      (click)="onAddServer(serverNameInput)">Add Server</button>
+    ...
+</div>
+```
+
+```typescript
+...
+export class CockpitComponent implements OnInit {
+  @Output() serverCreated = new EventEmitter<{serverName: string, serverContent: string}>();
+  ...
+  onAddServer(serverNameInput: HTMLInputElement) {
+    this.serverCreated.emit({
+      serverName: serverNameInput.value,
+      ...
+    });
+  }
+  ...
+```
+
