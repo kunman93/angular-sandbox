@@ -522,3 +522,24 @@ export class CockpitComponent implements OnInit {
   </div>
 </div>
 ```
+
+## View encapsulation
+
+In Angular, a component's styles can be encapsulated within the component's
+host element so that they don't affect the rest of the application. The
+`@Component` decorator provides the `encapsulation` option which can be used to
+control how the encapsulation is applied on a per component basis. The default
+is `ViewEncapsulation.Emulated`; `ViewEncapsulation.ShadowDom` and
+`ViewEncapsulation.None` are the other available options.
+
+```typescript
+import { ..., ViewEncapsulation} from '@angular/core';
+
+@Component({
+  encapsulation: ViewEncapsulation.None
+})
+export class ServerElementComponent implements OnInit {
+  ...
+}
+```
+
