@@ -579,6 +579,47 @@ export class CockpitComponent implements OnInit {
   ...
 ```
 
+## @ViewChild
+
+Sometimes we might need the local reference before calling a function.
+Previously, we used a local reference which was then passed to a function.
+There is another way to access local reference, namely directly from the
+TypeScript code of the component using `@ViewChild` decorator.
+
+#### `CockpitComponent`
+
+```typescript
+import { ElementRef, ViewChild } from '@angular/core';
+...
+export class CockpitComponent implements OnInit {
+  ...
+  @ViewChild('serverContentInput') serverContentInput: ElementRef
+  ...
+  onAddServer(serverNameInput: HTMLInputElement) {
+    this.serverCreated.emit({
+      ...
+      serverContent: this.serverContentInput.nativeElement.value
+    });
+  }
+  ...
+}
+```
+
+```html
+<div class="row">
+  <div class="col-xs-12">
+    ...
+    <!-- <input type="text" class="form-control" [(ngModel)]="newServerContent"> -->
+    <input type="text" class="form-control" #serverContentInput>
+    <br>
+    <button
+      class="btn btn-primary"
+      (click)="onAddServer(serverNameInput)">Add Server</button>
+      ...
+  </div>
+</div>
+```
+
 ## Projecting Content into Components with ng-content 
 
 Sometimes you have HTML code from e.g. `AppComponent` which you want to pass
