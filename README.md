@@ -579,7 +579,7 @@ export class CockpitComponent implements OnInit {
   ...
 ```
 
-## @ViewChild
+## `@ViewChild`
 
 Sometimes we might need the local reference before calling a function.
 Previously, we used a local reference which was then passed to a function.
@@ -630,7 +630,7 @@ content inside a component template. It serves as a hook to mark the place for
 Angular, where it should add any content it finds between the opening and
 closing tag. 
 
-#### `AppComponent`
+#### `ServerElementComponent`
 
 ```html
 <div class="panel panel-default">
@@ -641,7 +641,7 @@ closing tag.
 </div>
 ```
 
-#### `ServerElementComponent`
+#### `AppComponent`
 
 ```html
 <app-server-element 
@@ -652,6 +652,56 @@ closing tag.
             <em *ngIf="serverElement.type === 'blueprint'">{{ serverElement.content }}</em>
         </p>
 </app-server-element>
+```
+
+## `@ContentChild`
+
+A nice little addition to `@ViewChild` is `@ContentChild`. We can for example
+place a local reference `#contentParagraph` on the `<p>` element in the
+template of `AppComponent`. We then use it in our `ServerElementComponent`,
+which is where the content will end up (content projection). To access the
+content from `ServerElement`, `@ContentChild` can be used as shown in the
+following example.
+
+#### `AppComponent`
+
+```html
+<app-server-element 
+    *ngFor="let serverElement of serverElements" 
+    [element]="serverElement">
+    <p #contentParagraph>
+        <strong *ngIf="serverElement.type === 'server'" style="color: red">{{ serverElement.content }}</strong>
+        <em *ngIf="serverElement.type === 'blueprint'">{{ serverElement.content }}</em>
+    </p>
+</app-server-element>
+```
+
+#### `ServerElementComponent`
+
+```typescript
+import { ..., OnInit, ContentChild, ElementRef, AfterContentInit } from '@angular/core';
+
+export class ServerElementComponent implements OnInit, AfterContentInit {
+  ...
+  @ContentChild('contentParagraph', {static: true}) paragraph: ElementRef;
+  ...
+  ngOnInit(): void {
+    console.log('Text Content of paragraph: ' + this.paragraph.nativeElement.textContent);
+  }
+
+  ngAfterContentInit() {
+    console.log('Text Content of paragraph: ' + this.paragraph.nativeElement.textContent);
+  }
+}
+```
+
+```html
+<div class="panel panel-default">
+    ...
+    <div class="panel-body">
+       <ng-content></ng-content>
+    </div>
+</div>
 ```
 
 ## Component lifecycle and lifecycle hooks
