@@ -549,6 +549,8 @@ Sometimes instead of using Two-Way-Binding, local references e.g.
 `#serverNameInput` can be used. The local reference can then be passed e.g. to
 the function `onAddServer(...)`.
 
+#### `CockpitComponent`
+
 ```html
 <div class="row">
   <div class="col-xs-12">
@@ -575,5 +577,39 @@ export class CockpitComponent implements OnInit {
     });
   }
   ...
+```
+
+## Projecting Content into Components with ng-content 
+
+Sometimes you have HTML code from e.g. `AppComponent` which you want to pass
+into a component e.g. `ServerElementComponent`. By default, everything between
+the component's opening and closing tag is lost. To prevent this the special
+directive `<ng-content>` can be used. This element specifies where to project
+content inside a component template. It serves as a hook to mark the place for
+Angular, where it should add any content it finds between the opening and
+closing tag. 
+
+#### `AppComponent`
+
+```html
+<div class="panel panel-default">
+    <div class="panel-heading">{{ element.name }}</div>
+    <div class="panel-body">
+       <ng-content></ng-content>
+    </div>
+</div>
+```
+
+#### `ServerElementComponent`
+
+```html
+<app-server-element 
+    *ngFor="let serverElement of serverElements" 
+    [element]="serverElement">
+        <p>
+            <strong *ngIf="serverElement.type === 'server'" style="color: red">{{ serverElement.content }}</strong>
+            <em *ngIf="serverElement.type === 'blueprint'">{{ serverElement.content }}</em>
+        </p>
+</app-server-element>
 ```
 
