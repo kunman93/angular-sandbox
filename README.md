@@ -348,3 +348,366 @@ export class ServersComponent {
   ...
 }
 ```
+
+## Custom Bindings
+
+### Binding to Custom Properties
+
+By default all properties of components are only accessible inside these
+components, therefore not bindable from outside. For a parent component e.g.
+`AppComponent` to bind to a custom property e.g. `element` of a
+`ServerElementComponent`, the decorator `@Input()` needs to be added to the
+specific property. 
+
+#### Parent Component: `AppComponent`
+
+```typescript
+...
+export class AppComponent {
+  serverElements = [
+    {
+      type: 'server',
+      name: 'Testserver',
+      content: 'Just a test!'
+    }
+  ];
+}
+
+```
+
+```html
+<div class="container">
+  ...
+    <div class="col-xs-12">
+      <app-server-element 
+        *ngFor="let serverElement of serverElements" 
+        [element]="serverElement"></app-server-element>
+    </div>
+ ...
+</div>
+
+```
+
+#### Child Component: `ServerElementComponent`
+
+```typescript
+import { ...,  Input} from '@angular/core';
+...
+export class ServerElementComponent implements OnInit {
+  @Input() element: {
+    type: string,
+    name: string,
+    content: string
+  };
+  ...
+}
+``` 
+
+```html
+<div class="panel panel-default">
+    <div class="panel-heading">{{ element.name }}</div>
+    <div class="panel-body">
+        <p>
+            <strong *ngIf="element.type === 'server'" style="color: red">{{ element.content }}</strong>
+            <em *ngIf="element.type === 'blueprint'">{{ element.content }}</em>
+        </p>
+    </div>
+</div>
+```
+
+### Binding to Custom Events
+
+What happens when we have `CockpitComponent` and something changes in there and
+we want to inform our parent `AppComponent`? In the example below, we want to
+inform the `AppComponent`, that a new server or a blueprint was created by the `CockpitComponent`. 
+
+#### Parent Component: `AppComponent`
+
+The properties `serverCreated` and `blueprintCreated` call the respective
+functions of `onServerAdded($event)` and `onBlueprintAdded($event)`, when an event was emitted from `CockpitComponent`. 
+
+```typescript
+...
+export class AppComponent {
+  serverElements = [{...}];
+
+  onServerAdded(serverData : {
+    serverName: string, 
+    serverContent: string
+  }) {
+    this.serverElements.push({
+      type: 'server',
+      name: serverData.serverName,
+      content: serverData.serverContent
+    });
+  }
+
+  onBlueprintAdded(blueprintData : {
+    serverName: string, 
+    serverContent: string
+  }) {
+    this.serverElements.push({
+      type: 'blueprint',
+      name: blueprintData.serverName,
+      content: blueprintData.serverContent
+    });
+  }
+}
+```
+
+```html
+<div class="container">
+  <app-cockpit 
+    (serverCreated)="onServerAdded($event)"
+    (blueprintCreated)="onBlueprintAdded($event)"></app-cockpit>
+  <hr>
+  <div class="row">
+    <div class="col-xs-12">
+      <app-server-element 
+        *ngFor="let serverElement of serverElements" 
+        [element]="serverElement"></app-server-element>
+    </div>
+  </div>
+</div>
+```
+
+#### Child Component: `CockpitComponent`
+
+In `CockpitComponent`, we define two properties `serverCreated` and
+`blueprintCreated` which can emit events. The functions `onAddServer()` and
+`onAddBlueprint()` "emit" the events. To make the properties listenable from
+outside, `@Output()` decoration needs to be prepended to `serverCreated` and
+`blueprintCreated`. 
+
+```typescript
+import { EventEmitter, Output, ... } from '@angular/core';
+...
+export class CockpitComponent implements OnInit {
+  @Output() serverCreated = new EventEmitter<{serverName: string, serverContent: string}>();
+  @Output() blueprintCreated = new EventEmitter<{serverName: string, serverContent: string}>();
+  newServerName = '';
+  newServerContent = '';
+  ...
+  onAddServer() {
+    this.serverCreated.emit({
+      serverName: this.newServerName,
+      serverContent: this.newServerContent
+    });
+  }
+
+  onAddBlueprint() {
+    this.blueprintCreated.emit({
+      serverName: this.newServerName,
+      serverContent: this.newServerContent
+    });
+  }
+}
+```
+
+```html
+<div class="row">
+  <div class="col-xs-12">
+    <p>Add new Servers or blueprints!</p>
+    <label>Server Name</label>
+    <input type="text" class="form-control" [(ngModel)]="newServerName">
+    <label>Server Content</label>
+    <input type="text" class="form-control" [(ngModel)]="newServerContent">
+    <br>
+    <button
+      class="btn btn-primary"
+      (click)="onAddServer()">Add Server</button>
+    <button
+      class="btn btn-primary"
+      (click)="onAddBlueprint()">Add Server Blueprint</button>
+  </div>
+</div>
+```
+
+## View encapsulation
+
+In Angular, a component's styles can be encapsulated within the component's
+host element so that they don't affect the rest of the application. The
+`@Component` decorator provides the `encapsulation` option which can be used to
+control how the encapsulation is applied on a per component basis. The default
+is `ViewEncapsulation.Emulated`; `ViewEncapsulation.ShadowDom` and
+`ViewEncapsulation.None` are the other available options.
+
+```typescript
+import { ..., ViewEncapsulation} from '@angular/core';
+
+@Component({
+  encapsulation: ViewEncapsulation.None
+})
+export class ServerElementComponent implements OnInit {
+  ...
+}
+```
+
+## Local References
+
+Sometimes instead of using Two-Way-Binding, local references e.g.
+`#serverNameInput` can be used. The local reference can then be passed e.g. to
+the function `onAddServer(...)`.
+
+#### `CockpitComponent`
+
+```html
+<div class="row">
+  <div class="col-xs-12">
+    ...
+    <!-- <input type="text" class="form-control" [(ngModel)]="newServerName"> -->
+    <input type="text" class="form-control" #serverNameInput>
+    ...
+    <button
+      class="btn btn-primary"
+      (click)="onAddServer(serverNameInput)">Add Server</button>
+    ...
+</div>
+```
+
+```typescript
+...
+export class CockpitComponent implements OnInit {
+  @Output() serverCreated = new EventEmitter<{serverName: string, serverContent: string}>();
+  ...
+  onAddServer(serverNameInput: HTMLInputElement) {
+    this.serverCreated.emit({
+      serverName: serverNameInput.value,
+      ...
+    });
+  }
+  ...
+```
+
+## `@ViewChild`
+
+Sometimes we might need the local reference before calling a function.
+Previously, we used a local reference which was then passed to a function.
+There is another way to access local reference, namely directly from the
+TypeScript code of the component using `@ViewChild` decorator.
+
+#### `CockpitComponent`
+
+```typescript
+import { ElementRef, ViewChild } from '@angular/core';
+...
+export class CockpitComponent implements OnInit {
+  ...
+  @ViewChild('serverContentInput') serverContentInput: ElementRef
+  ...
+  onAddServer(serverNameInput: HTMLInputElement) {
+    this.serverCreated.emit({
+      ...
+      serverContent: this.serverContentInput.nativeElement.value
+    });
+  }
+  ...
+}
+```
+
+```html
+<div class="row">
+  <div class="col-xs-12">
+    ...
+    <!-- <input type="text" class="form-control" [(ngModel)]="newServerContent"> -->
+    <input type="text" class="form-control" #serverContentInput>
+    <br>
+    <button
+      class="btn btn-primary"
+      (click)="onAddServer(serverNameInput)">Add Server</button>
+      ...
+  </div>
+</div>
+```
+
+## Projecting Content into Components with ng-content 
+
+Sometimes you have HTML code from e.g. `AppComponent` which you want to pass
+into a component e.g. `ServerElementComponent`. By default, everything between
+the component's opening and closing tag is lost. To prevent this the special
+directive `<ng-content>` can be used. This element specifies where to project
+content inside a component template. It serves as a hook to mark the place for
+Angular, where it should add any content it finds between the opening and
+closing tag. 
+
+#### `ServerElementComponent`
+
+```html
+<div class="panel panel-default">
+    <div class="panel-heading">{{ element.name }}</div>
+    <div class="panel-body">
+       <ng-content></ng-content>
+    </div>
+</div>
+```
+
+#### `AppComponent`
+
+```html
+<app-server-element 
+    *ngFor="let serverElement of serverElements" 
+    [element]="serverElement">
+        <p>
+            <strong *ngIf="serverElement.type === 'server'" style="color: red">{{ serverElement.content }}</strong>
+            <em *ngIf="serverElement.type === 'blueprint'">{{ serverElement.content }}</em>
+        </p>
+</app-server-element>
+```
+
+## `@ContentChild`
+
+A nice little addition to `@ViewChild` is `@ContentChild`. We can for example
+place a local reference `#contentParagraph` on the `<p>` element in the
+template of `AppComponent`. We then use it in our `ServerElementComponent`,
+which is where the content will end up (content projection). To access the
+content from `ServerElement`, `@ContentChild` can be used as shown in the
+following example.
+
+#### `AppComponent`
+
+```html
+<app-server-element 
+    *ngFor="let serverElement of serverElements" 
+    [element]="serverElement">
+    <p #contentParagraph>
+        <strong *ngIf="serverElement.type === 'server'" style="color: red">{{ serverElement.content }}</strong>
+        <em *ngIf="serverElement.type === 'blueprint'">{{ serverElement.content }}</em>
+    </p>
+</app-server-element>
+```
+
+#### `ServerElementComponent`
+
+```typescript
+import { ..., OnInit, ContentChild, ElementRef, AfterContentInit } from '@angular/core';
+
+export class ServerElementComponent implements OnInit, AfterContentInit {
+  ...
+  @ContentChild('contentParagraph', {static: true}) paragraph: ElementRef;
+  ...
+  ngOnInit(): void {
+    console.log('Text Content of paragraph: ' + this.paragraph.nativeElement.textContent);
+  }
+
+  ngAfterContentInit() {
+    console.log('Text Content of paragraph: ' + this.paragraph.nativeElement.textContent);
+  }
+}
+```
+
+```html
+<div class="panel panel-default">
+    ...
+    <div class="panel-body">
+       <ng-content></ng-content>
+    </div>
+</div>
+```
+
+## Component lifecycle and lifecycle hooks
+
+After your application instantiates a component or directive by calling its
+constructor, Angular calls the hook methods e.g. ngOnInit() you have
+implemented at the appropriate point in the lifecycle of that instance. To
+learn more see [Lifecycle Hooks](https://angular.io/guide/lifecycle-hooks).
+
