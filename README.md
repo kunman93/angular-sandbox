@@ -860,3 +860,66 @@ export class HighlightDirective implements OnInit {
     }
 }
 ```
+
+## Binding to Directive Properties
+
+In the previous examples the `backgroundColor` was hardcoded. To dynamically
+set the color value, custom property binding can be applied. We therefore add
+two fields `defaultColor` and `higlightColor`. How does Angular know if we want
+to bind to a property of a paragraph - which of course doesn't have a
+`defaultColor` or to a property of our own directive. Angular figures that out
+on its own. Angular checks at first the own directives before checking the
+native properties of elements.
+
+```typescript
+import { 
+    Directive, 
+    ElementRef, 
+    HostBinding, 
+    HostListener, 
+    Input, 
+    OnInit, 
+    Renderer2 
+} from "@angular/core";
+
+@Directive({
+    selector: '[appHighlight]'
+})
+export class HighlightDirective implements OnInit {
+    @Input() defaultColor: string;
+    @Input() highlightColor: string;
+    @HostBinding('style.backgroundColor') backgroundColor: string;
+
+    constructor(
+        private elementRef: ElementRef,
+        private renderer: Renderer2
+    ) { }
+
+    ngOnInit() { 
+        this.backgroundColor = this.defaultColor;
+    }
+
+    @HostListener('mouseenter') mouseover(evenData: Event){
+        this.backgroundColor = this.highlightColor;
+    }
+
+    @HostListener('mouseleave') mouseleave(evenData: Event){
+        this.backgroundColor = this.defaultColor;
+    }
+}
+```
+
+The template using `HighlightDirective` can then set the properties as follows:
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+      ...
+      <p appHighlight 
+      [defaultColor]="'yellow'" 
+      [highlightColor]="'green'">Style me with attribute directive!</p>
+    </div>
+  </div>
+</div>
+```

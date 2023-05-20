@@ -26,7 +26,12 @@
       <ng-template [ngIf]="onlyOdd">
         <p>Only odd</p>
       </ng-template>
-      <p appHighlight>Style me with attribute directive!</p>
+      <p appHighlight 
+      [defaultColor]="'yellow'" 
+      [highlightColor]="'green'">Style me with attribute directive!</p>
+      <p appHighlight 
+      [defaultColor]="'pink'" 
+      [highlightColor]="'violet'">Style me with attribute directive!</p>
     </div>
   </div>
 </div>
