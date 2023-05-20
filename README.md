@@ -711,3 +711,67 @@ constructor, Angular calls the hook methods e.g. ngOnInit() you have
 implemented at the appropriate point in the lifecycle of that instance. To
 learn more see [Lifecycle Hooks](https://angular.io/guide/lifecycle-hooks).
 
+## Attribute Directive using Renderer
+
+To create a custom attribute directive `HighlightDirective`, the `@Directive`
+decorator needs to be added to the class with its selector e.g.
+`[appHighlight]`, since directives are used in templates. For any DOM
+manipulation, the Renderer should be used. Accessing and setting the properties
+as shown in the commented out variant can lead to errors, since Angular is able
+render a template without a DOM, causing the properties to not be available.
+
+```typescript
+import { Directive, ElementRef, OnInit, Renderer2 } from "@angular/core";
+
+@Directive({
+    selector: '[appHighlight]'
+})
+export class HighlightDirective implements OnInit {
+    constructor(
+        private elementRef: ElementRef,
+        private renderer: Renderer2
+    ) { }
+
+    ngOnInit() {
+        // this.elementRef.nativeElement.style.backgroundColor = 'green';
+        this.renderer.setStyle(
+            this.elementRef.nativeElement,
+            'background-color', 'green'
+        );
+    }
+}
+```
+
+The newly created attribute directive needs to be added to `AppModule`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+
+import { AppComponent } from './app.component';
+import { HighlightDirective } from './directives/highlight.directive';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HighlightDirective
+  ],
+  ...
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+To use the `HighlightDirective`, add the directive as an attribute to the `<p>`
+element in the HTML template.
+
+```html
+ <div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+      ...
+      <p appHighlight>Style me with attribute directive!</p>
+    </div>
+  </div>
+</div>
+```
