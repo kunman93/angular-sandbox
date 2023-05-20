@@ -823,3 +823,40 @@ export class HighlightDirective implements OnInit {
 ```
 
 ## HostListener with HostBinding
+
+With `@HostBinding`, we don't need to use the Renderer. There is nothing wrong
+with the Renderer, but there is an easier way of simply changing the background
+color as shown below.
+
+```typescript
+import { 
+    Directive, 
+    ElementRef, 
+    HostBinding, 
+    HostListener, 
+    OnInit, 
+    Renderer2 
+} from "@angular/core";
+
+@Directive({
+    selector: '[appHighlight]'
+})
+export class HighlightDirective implements OnInit {
+    @HostBinding('style.backgroundColor') backgroundColor: string = 'green';
+
+    constructor(
+        private elementRef: ElementRef,
+        private renderer: Renderer2
+    ) { }
+
+    ngOnInit() { }
+
+    @HostListener('mouseenter') mouseover(evenData: Event){
+        this.backgroundColor = 'green';
+    }
+
+    @HostListener('mouseleave') mouseleave(evenData: Event){
+        this.backgroundColor = 'transparent';
+    }
+}
+```
