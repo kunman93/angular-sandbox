@@ -775,3 +775,51 @@ element in the HTML template.
   </div>
 </div>
 ```
+
+## HostListener with Renderer
+
+`@HostListener` decorator can be used, if you want to react to some events,
+e.g. mouse events, which changes e.g. the background color. The previous directive can therefore be modified as follows: 
+
+```typescript
+import { 
+    Directive, 
+    ElementRef, 
+    HostListener, 
+    OnInit, 
+    Renderer2 
+} from "@angular/core";
+
+@Directive({
+    selector: '[appHighlight]'
+})
+export class HighlightDirective implements OnInit {
+    constructor(
+        private elementRef: ElementRef,
+        private renderer: Renderer2
+    ) { }
+
+    ngOnInit() {
+        this.renderer.setStyle(
+            this.elementRef.nativeElement,
+            'background-color', 'green'
+        );
+    }
+
+    @HostListener('mouseenter') mouseover(evenData: Event){
+        this.renderer.setStyle(
+            this.elementRef.nativeElement,
+            'background-color', 'green'
+        );
+    }
+
+    @HostListener('mouseleave') mouseleave(evenData: Event){
+        this.renderer.setStyle(
+            this.elementRef.nativeElement,
+            'background-color', 'transparent'
+        );
+    }
+}
+```
+
+## HostListener with HostBinding
