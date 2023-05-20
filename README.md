@@ -923,3 +923,57 @@ The template using `HighlightDirective` can then set the properties as follows:
   </div>
 </div>
 ```
+
+## Building a Structural Directive
+
+Below is a custom Structural Directive `*appUnless` which does the opposite of
+`*ngIf`.  
+
+```typescript
+import { 
+    Directive, 
+    Input, 
+    TemplateRef, 
+    ViewContainerRef 
+ } from "@angular/core";
+
+@Directive({
+    selector: '[appUnless]'
+})
+export class UnlessDirective {
+    @Input() set appUnless(condition: boolean) {
+        if (!condition) {
+            this.viewContainerRef.createEmbeddedView(this.templateRef);
+        } else {
+            this.viewContainerRef.clear();
+        }
+    }
+
+    constructor(
+        private templateRef: TemplateRef<any>,
+        private viewContainerRef: ViewContainerRef
+    ) { }
+}
+```
+
+The custom Structural Directive can then be used in the template as follows.
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+       ...
+      <ul class="list-group">
+        <div *appUnless="onlyOdd">
+          <li
+            class="list-group-item"
+            *ngFor="let evenNumber of evenNumbers">
+            {{ evenNumber }}
+          </li>
+        </div>
+      </ul>
+      ...
+    </div>
+  </div>
+</div>
+```
