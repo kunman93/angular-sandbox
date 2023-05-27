@@ -994,3 +994,111 @@ The custom Structural Directive can then be used in the template as follows.
 </div>
 ```
 
+## Services and DI via constructor injection
+
+Services can make the code leaner, more centralized and easier to maintain;
+complex output input chain where events and properties are passed to get data
+from component A to component B can be avoided. Services e.g. `LoggingService`
+can be created as normal classes. But for newer Angular versions, it is
+recommended to use the `@Injectable()` decorator.
+
+```typescript
+@Injectable()
+export class LoggingService {
+    logStatusChange(status: string) {
+        console.log('A server status changed, new status: ' + status);
+    }
+}
+```
+
+A component e.g. `NewAccountComponent` using the service, needs to declare a
+provider for the service - in this case, `LoggingService`. The service then
+gets injected via constructor injection. Note, that there is a DI hierarchy.
+For example, if there exists two components `AccountComponent` and
+`NewAccountComponent` where the providers are declared to use a certain
+service, then different instances of the same service will be injected for both
+components. To use the same instance of the service for all components, declare
+the providers array in the parent component e.g. `AppComponent` - the highest
+possible level is in the `AppModule` - and remove the service from the providers
+array of each child component, in this case from `NewAccountComponent` and
+`AccountComponent`.
+
+```typescript
+import { Component, EventEmitter, Output } from '@angular/core';
+import { LoggingService } from '../logging.service';
+
+@Component({
+  ...
+  providers: [LoggingService]
+})
+export class NewAccountComponent {
+  ...
+
+  constructor(private loggingService: LoggingService) {}
+
+  onCreateAccount(accountName: string, accountStatus: string) {
+    ...
+    this.loggingService.logStatusChange(accountStatus)
+  }
+}
+```
+
+### Injecting Services into Services
+
+If you want to inject services into services, make sure to provide the service on the `AppModule` level and to add `@Injectable` to the service where you want to inject it in.
+
+### Using Services for Cross-Component Communication
+
+The example below illustrates how the `AccounstsService` can be used to
+establish the Cross-Component Communication between `AccountComponent` and
+`NewAccountComponent`.
+
+```typescript
+import { EventEmitter } from "@angular/core";
+
+export class AccountsService {
+  ...
+  statusUpdatede = new EventEmitter<string>();
+  ...
+}
+```
+
+```typescript
+...
+import { AccountsService } from '../services/accounts.service';
+
+...
+export class AccountComponent {
+  ...
+
+  constructor(
+    ...
+    private accountsService: AccountsService
+  ) { }
+
+  onSetStatus(status: string) {
+    ...
+    this.accountsService.statusUpdatede.emit(status)
+  }
+}
+```
+
+```typescript
+...
+import { AccountsService } from '../services/accounts.service';
+
+...
+export class NewAccountComponent {
+
+  constructor(
+    ...
+    private accountsService: AccountsService
+  ) { 
+    this.accountsService.statusUpdatede.subscribe(
+      (status: string) => alert('New Status: ' + status)
+    );
+  }
+
+  ...
+}
+```
