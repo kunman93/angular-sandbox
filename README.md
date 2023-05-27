@@ -994,3 +994,37 @@ The custom Structural Directive can then be used in the template as follows.
 </div>
 ```
 
+## Services and DI via constructor injection
+
+Services e.g. `LoggingService` can be created as normal classes
+
+```typescript
+export class LoggingService {
+    logStatusChange(status: string) {
+        console.log('A server status changed, new status: ' + status);
+    }
+}
+```
+
+A component e.g. `NewAccountComponent` using the service needs to declare a
+provider for the service - in this case, `LoggingService`. The service then
+gets injected via constructor injection.
+
+```typescript
+import { Component, EventEmitter, Output } from '@angular/core';
+import { LoggingService } from '../logging.service';
+
+@Component({
+  ...
+  providers: [LoggingService]
+})
+export class NewAccountComponent {
+  ...
+
+  constructor(private loggingService: LoggingService) {}
+
+  onCreateAccount(accountName: string, accountStatus: string) {
+    ...
+    this.loggingService.logStatusChange(accountStatus)
+  }
+}```
