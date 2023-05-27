@@ -996,9 +996,11 @@ The custom Structural Directive can then be used in the template as follows.
 
 ## Services and DI via constructor injection
 
-Services e.g. `LoggingService` can be created as normal classes
+Services e.g. `LoggingService` can be created as normal classes. But for newer
+Angular versions, it is recommended to use the `@Injectable()` decorator.
 
 ```typescript
+@Injectable()
 export class LoggingService {
     logStatusChange(status: string) {
         console.log('A server status changed, new status: ' + status);
@@ -1013,7 +1015,10 @@ For example, if there exists two components `AccountComponent` and
 `NewAccountComponent` where the providers are declared to use a certain
 service, then different instances of the same service will be injected for both
 components. To use the same instance of the service for all components, declare
-the providers array in the parent component e.g. `AppComponent` and remove the service from the providers array of each child component, in this case from `NewAccountComponent` and `AccountComponent`.
+the providers array in the parent component e.g. `AppComponent` - the highest
+possible level is in the `AppModule` - and remove the service from the providers
+array of each child component, in this case from `NewAccountComponent` and
+`AccountComponent`.
 
 ```typescript
 import { Component, EventEmitter, Output } from '@angular/core';
