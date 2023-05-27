@@ -1006,9 +1006,14 @@ export class LoggingService {
 }
 ```
 
-A component e.g. `NewAccountComponent` using the service needs to declare a
+A component e.g. `NewAccountComponent` using the service, needs to declare a
 provider for the service - in this case, `LoggingService`. The service then
-gets injected via constructor injection.
+gets injected via constructor injection. Note, that there is a DI hierarchy.
+For example, if there exists two components `AccountComponent` and
+`NewAccountComponent` where the providers are declared to use a certain
+service, then different instances of the same service will be injected for both
+components. To use the same instance of the service for all components, declare
+the providers array in the parent component e.g. `AppComponent` and remove the service from the providers array of each child component, in this case from `NewAccountComponent` and `AccountComponent`.
 
 ```typescript
 import { Component, EventEmitter, Output } from '@angular/core';
@@ -1028,3 +1033,4 @@ export class NewAccountComponent {
     this.loggingService.logStatusChange(accountStatus)
   }
 }```
+
