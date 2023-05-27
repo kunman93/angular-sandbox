@@ -349,6 +349,22 @@ export class ServersComponent {
 }
 ```
 
+### `ngSwitch` directive
+
+The `[ngSwitch]` directive on a container specifies an expression to match
+against. The expressions to match are provided by ngSwitchCase directives on
+views within the container. Every view that matches is rendered. If there are no
+matches, a view with the `ngSwitchDefault` directive is rendered.
+
+```html
+<div [ngSwitch]="value">
+    <p *ngSwitchCase="5">Value is 5</p>
+    <p *ngSwitchCase="10">Value is 10</p>
+    <p *ngSwitchCase="15">Value is 15</p>
+    <p *ngSwitchDefault>Value is default</p>
+</div>
+```
+
 ## Custom Bindings
 
 ### Binding to Custom Properties
@@ -977,3 +993,4 @@ The custom Structural Directive can then be used in the template as follows.
   </div>
 </div>
 ```
+
