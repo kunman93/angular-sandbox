@@ -349,6 +349,22 @@ export class ServersComponent {
 }
 ```
 
+### `ngSwitch` directive
+
+The `[ngSwitch]` directive on a container specifies an expression to match
+against. The expressions to match are provided by ngSwitchCase directives on
+views within the container. Every view that matches is rendered. If there are no
+matches, a view with the `ngSwitchDefault` directive is rendered.
+
+```html
+<div [ngSwitch]="value">
+    <p *ngSwitchCase="5">Value is 5</p>
+    <p *ngSwitchCase="10">Value is 10</p>
+    <p *ngSwitchCase="15">Value is 15</p>
+    <p *ngSwitchDefault>Value is default</p>
+</div>
+```
+
 ## Custom Bindings
 
 ### Binding to Custom Properties
@@ -710,4 +726,271 @@ After your application instantiates a component or directive by calling its
 constructor, Angular calls the hook methods e.g. ngOnInit() you have
 implemented at the appropriate point in the lifecycle of that instance. To
 learn more see [Lifecycle Hooks](https://angular.io/guide/lifecycle-hooks).
+
+## Attribute Directive using Renderer
+
+To create a custom attribute directive `HighlightDirective`, the `@Directive`
+decorator needs to be added to the class with its selector e.g.
+`[appHighlight]`, since directives are used in templates. For any DOM
+manipulation, the Renderer should be used. Accessing and setting the properties
+as shown in the commented out variant can lead to errors, since Angular is able
+render a template without a DOM, causing the properties to not be available.
+
+```typescript
+import { Directive, ElementRef, OnInit, Renderer2 } from "@angular/core";
+
+@Directive({
+    selector: '[appHighlight]'
+})
+export class HighlightDirective implements OnInit {
+    constructor(
+        private elementRef: ElementRef,
+        private renderer: Renderer2
+    ) { }
+
+    ngOnInit() {
+        // this.elementRef.nativeElement.style.backgroundColor = 'green';
+        this.renderer.setStyle(
+            this.elementRef.nativeElement,
+            'background-color', 'green'
+        );
+    }
+}
+```
+
+The newly created attribute directive needs to be added to `AppModule`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+
+import { AppComponent } from './app.component';
+import { HighlightDirective } from './directives/highlight.directive';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HighlightDirective
+  ],
+  ...
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+To use the `HighlightDirective`, add the directive as an attribute to the `<p>`
+element in the HTML template.
+
+```html
+ <div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+      ...
+      <p appHighlight>Style me with attribute directive!</p>
+    </div>
+  </div>
+</div>
+```
+
+## HostListener with Renderer
+
+`@HostListener` decorator can be used, if you want to react to some events,
+e.g. mouse events, which changes e.g. the background color. The previous directive can therefore be modified as follows: 
+
+```typescript
+import { 
+    Directive, 
+    ElementRef, 
+    HostListener, 
+    OnInit, 
+    Renderer2 
+} from "@angular/core";
+
+@Directive({
+    selector: '[appHighlight]'
+})
+export class HighlightDirective implements OnInit {
+    constructor(
+        private elementRef: ElementRef,
+        private renderer: Renderer2
+    ) { }
+
+    ngOnInit() {
+        this.renderer.setStyle(
+            this.elementRef.nativeElement,
+            'background-color', 'green'
+        );
+    }
+
+    @HostListener('mouseenter') mouseover(evenData: Event){
+        this.renderer.setStyle(
+            this.elementRef.nativeElement,
+            'background-color', 'green'
+        );
+    }
+
+    @HostListener('mouseleave') mouseleave(evenData: Event){
+        this.renderer.setStyle(
+            this.elementRef.nativeElement,
+            'background-color', 'transparent'
+        );
+    }
+}
+```
+
+## HostListener with HostBinding
+
+With `@HostBinding`, we don't need to use the Renderer. There is nothing wrong
+with the Renderer, but there is an easier way of simply changing the background
+color as shown below.
+
+```typescript
+import { 
+    Directive, 
+    ElementRef, 
+    HostBinding, 
+    HostListener, 
+    OnInit, 
+    Renderer2 
+} from "@angular/core";
+
+@Directive({
+    selector: '[appHighlight]'
+})
+export class HighlightDirective implements OnInit {
+    @HostBinding('style.backgroundColor') backgroundColor: string = 'green';
+
+    constructor(
+        private elementRef: ElementRef,
+        private renderer: Renderer2
+    ) { }
+
+    ngOnInit() { }
+
+    @HostListener('mouseenter') mouseover(evenData: Event){
+        this.backgroundColor = 'green';
+    }
+
+    @HostListener('mouseleave') mouseleave(evenData: Event){
+        this.backgroundColor = 'transparent';
+    }
+}
+```
+
+## Binding to Directive Properties
+
+In the previous examples the `backgroundColor` was hardcoded. To dynamically
+set the color value, custom property binding can be applied. We therefore add
+two fields `defaultColor` and `higlightColor`. How does Angular know if we want
+to bind to a property of a paragraph - which of course doesn't have a
+`defaultColor` or to a property of our own directive. Angular figures that out
+on its own. Angular checks at first the own directives before checking the
+native properties of elements.
+
+```typescript
+import { 
+    Directive, 
+    ElementRef, 
+    HostBinding, 
+    HostListener, 
+    Input, 
+    OnInit, 
+    Renderer2 
+} from "@angular/core";
+
+@Directive({
+    selector: '[appHighlight]'
+})
+export class HighlightDirective implements OnInit {
+    @Input() defaultColor: string;
+    @Input() highlightColor: string;
+    @HostBinding('style.backgroundColor') backgroundColor: string;
+
+    constructor(
+        private elementRef: ElementRef,
+        private renderer: Renderer2
+    ) { }
+
+    ngOnInit() { 
+        this.backgroundColor = this.defaultColor;
+    }
+
+    @HostListener('mouseenter') mouseover(evenData: Event){
+        this.backgroundColor = this.highlightColor;
+    }
+
+    @HostListener('mouseleave') mouseleave(evenData: Event){
+        this.backgroundColor = this.defaultColor;
+    }
+}
+```
+
+The template using `HighlightDirective` can then set the properties as follows:
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+      ...
+      <p appHighlight 
+      [defaultColor]="'yellow'" 
+      [highlightColor]="'green'">Style me with attribute directive!</p>
+    </div>
+  </div>
+</div>
+```
+
+## Building a Structural Directive
+
+Below is a custom Structural Directive `*appUnless` which does the opposite of
+`*ngIf`.  
+
+```typescript
+import { 
+    Directive, 
+    Input, 
+    TemplateRef, 
+    ViewContainerRef 
+ } from "@angular/core";
+
+@Directive({
+    selector: '[appUnless]'
+})
+export class UnlessDirective {
+    @Input() set appUnless(condition: boolean) {
+        if (!condition) {
+            this.viewContainerRef.createEmbeddedView(this.templateRef);
+        } else {
+            this.viewContainerRef.clear();
+        }
+    }
+
+    constructor(
+        private templateRef: TemplateRef<any>,
+        private viewContainerRef: ViewContainerRef
+    ) { }
+}
+```
+
+The custom Structural Directive can then be used in the template as follows.
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+       ...
+      <ul class="list-group">
+        <div *appUnless="onlyOdd">
+          <li
+            class="list-group-item"
+            *ngFor="let evenNumber of evenNumbers">
+            {{ evenNumber }}
+          </li>
+        </div>
+      </ul>
+      ...
+    </div>
+  </div>
+</div>
+```
 
