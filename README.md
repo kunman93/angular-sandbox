@@ -996,8 +996,11 @@ The custom Structural Directive can then be used in the template as follows.
 
 ## Services and DI via constructor injection
 
-Services e.g. `LoggingService` can be created as normal classes. But for newer
-Angular versions, it is recommended to use the `@Injectable()` decorator.
+Services can make the code leaner, more centralized and easier to maintain;
+complex output input chain where events and properties are passed to get data
+from component A to component B can be avoided. Services e.g. `LoggingService`
+can be created as normal classes. But for newer Angular versions, it is
+recommended to use the `@Injectable()` decorator.
 
 ```typescript
 @Injectable()
@@ -1037,5 +1040,65 @@ export class NewAccountComponent {
     ...
     this.loggingService.logStatusChange(accountStatus)
   }
-}```
+}
+```
 
+### Injecting Services into Services
+
+If you want to inject services into services, make sure to provide the service on the `AppModule` level and to add `@Injectable` to the service where you want to inject it in.
+
+### Using Services for Cross-Component Communication
+
+The example below illustrates how the `AccounstsService` can be used to
+establish the Cross-Component Communication between `AccountComponent` and
+`NewAccountComponent`.
+
+```typescript
+import { EventEmitter } from "@angular/core";
+
+export class AccountsService {
+  ...
+  statusUpdatede = new EventEmitter<string>();
+  ...
+}
+```
+
+```typescript
+...
+import { AccountsService } from '../services/accounts.service';
+
+...
+export class AccountComponent {
+  ...
+
+  constructor(
+    ...
+    private accountsService: AccountsService
+  ) { }
+
+  onSetStatus(status: string) {
+    ...
+    this.accountsService.statusUpdatede.emit(status)
+  }
+}
+```
+
+```typescript
+...
+import { AccountsService } from '../services/accounts.service';
+
+...
+export class NewAccountComponent {
+
+  constructor(
+    ...
+    private accountsService: AccountsService
+  ) { 
+    this.accountsService.statusUpdatede.subscribe(
+      (status: string) => alert('New Status: ' + status)
+    );
+  }
+
+  ...
+}
+```
