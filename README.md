@@ -1229,3 +1229,33 @@ of the path. That's why the *Home* nav tab is always active, when for example
   </div>
 </div>
 ```
+
+### Navigating Programmaticaly
+
+In `home.component.html` we can navigate to `/servers` when clicking on the
+button.
+
+```html
+...
+<button class="btn btn-primary" (click)="onLoadServers()">Load Servers</button>
+```
+
+In `HomeComponent`, the router is injected and used in `onLoadServers()`.
+
+```typescript
+import { ..., OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+
+export class HomeComponent implements OnInit {
+
+  constructor(private router: Router) { }
+
+  ngOnInit() {
+  }
+
+  onLoadServers() {
+    // complex calculations
+    this.router.navigate(['/servers'])
+  }
+}
+```
