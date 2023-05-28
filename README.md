@@ -1102,3 +1102,53 @@ export class NewAccountComponent {
   ...
 }
 ```
+
+## Routing
+
+### Setting up and Loading Routes
+
+To define the routes, an application has, the constant `appRoutes` should be
+declared. The constant should hold an array of multiple routes. The `path` e.g.
+`users` refers to the value, entered in the URL after the domain e.g.
+`http://localhost:4200/`. When a path is reached, an action e.g loading a
+component, should also be declared; the desired action is assigned to
+`component` property. The registration of the routes occurs by passing the
+`appRoutes` to `RouterModule.forRoot(appRoutes)`
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+import { RouterModule, Routes } from '@angular/router';
+
+const appRoutes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: 'users', component: UsersComponent },
+  { path: 'servers', component: ServersComponent },
+];
+
+@NgModule({
+  ...
+  imports: [
+    ...
+    RouterModule.forRoot(appRoutes)
+  ],
+  ...
+})
+export class AppModule { }
+```
+
+To render the currently selected route in `app.component.html`,
+`<router-outlet>` is used.
+
+```html
+ <div class="container">
+  ...
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+```
+
