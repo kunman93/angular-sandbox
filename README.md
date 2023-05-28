@@ -1230,7 +1230,7 @@ of the path. That's why the *Home* nav tab is always active, when for example
 </div>
 ```
 
-### Navigating Programmaticaly
+### Navigating Programmatically using absolute or relative paths
 
 In `home.component.html` we can navigate to `/servers` when clicking on the
 button.
@@ -1244,18 +1244,27 @@ In `HomeComponent`, the router is injected and used in `onLoadServers()`.
 
 ```typescript
 import { ..., OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
+...
 export class HomeComponent implements OnInit {
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit() {
   }
 
   onLoadServers() {
     // complex calculations
-    this.router.navigate(['/servers'])
+
+    // variant 1: navigating using the absolute path "/servers"
+    // this.router.navigate(['/servers'])
+
+    // variant 2: navigating using the  path "servers" relative to "this.route"
+    this.router.navigate(['servers'], {relativeTo: this.route});
   }
 }
 ```
