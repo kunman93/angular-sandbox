@@ -1268,3 +1268,78 @@ export class HomeComponent implements OnInit {
   }
 }
 ```
+
+### Passing parameter to routes and fetching route parameters reactively
+
+In `appRoutes` constant in AppModule, we define a new route with parameters.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+
+...
+import { RouterModule, Routes } from '@angular/router';
+
+const appRoutes: Routes = [
+  ...
+  { path: 'users/:id/:name', component: UserComponent },
+  ...
+];
+
+@NgModule({
+  ...
+  imports: [
+    ...
+    RouterModule.forRoot(appRoutes)
+  ],
+  ...
+})
+export class AppModule { }
+```
+
+In `UserComponent`, we can fetch the route parameters reactively with
+`ActivatedRoute`. Set for example the path manually to `users/3/Max`.
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+@Component({
+  selector: 'app-user',
+  templateUrl: './user.component.html',
+  styleUrls: ['./user.component.css']
+})
+export class UserComponent implements OnInit {
+  user: {id: number, name: string};
+
+  constructor(private route: ActivatedRoute) { }
+
+  ngOnInit() {
+    //  this.route.snapshot.params will only be excuted for the first initialization
+    this.user = {
+      id: this.route.snapshot.params['id'],
+      name: this.route.snapshot.params['name'],
+    }
+    // to react to subsequent changes happening in this component, subscribe to route params and set the users id and name.
+    this.route.params
+      .subscribe((params: Params) => {
+        this.user.id = params['id'];
+        this.user.name = params['name'];
+      })
+  }
+}
+```
+
+The corresponding template `user.component.html` looks as follows. If `Load
+Anna (10)` link is clicked, `this.route.params.subscribe` declared above in
+`ngOnInit` will be triggered and the string interpolation values will be
+updated to id = 10 and name = 'Anna'. If the subscribe block wasn't there and
+the link would have been clicked, the id = 3 and name = 'Max' would have still
+remained, even though the path has changed to `/users/10/Anna`.
+
+```html
+<p>User with ID {{user.id}} loaded.</p>
+<p>User name is {{user.name}}</p>
+<hr>
+<a [routerLink]="['/users', 10, 'Anna']">Load Anna (10)</a>
+```
