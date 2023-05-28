@@ -1200,3 +1200,32 @@ provides; the navigation is handled differently.
   </div>
 </div>
 ```
+
+### Styling Active Router Links
+
+`RouterLinkActive` tracks whether the linked route of an element is currently
+active, and allows you to specify one or more CSS classes to add to the element
+when the linked route is active. By default it marks an element as active and
+adds the CSS class if it contains the path you are on or if this link is part
+of the path. That's why the *Home* nav tab is always active, when for example
+*Servers* or *Users* nav tab is selected. To fix this, use
+[routerLinkActiveOptions]="{exact: true}".
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <ul class="nav nav-tabs">
+        <li role="presentation" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><a [routerLink]="['/']">Home</a></li>
+        <li role="presentation" routerLinkActive="active"><a [routerLink]="['/servers']">Servers</a></li>
+        <li role="presentation" routerLinkActive="active"><a [routerLink]="['/users']">Users</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+```
