@@ -1494,3 +1494,19 @@ Below you can find the applied change for the template `user.component.html`.
 </div>
 ```
 
+### Redirecting and Wildcard Routes
+
+In `appRoutes` in `app.module.ts` we can define a redirect to `/not-found` if
+any invalid route is entered. Make sure that the generic route `**` is the last
+one in the array of routes.
+
+```typescript
+...
+const appRoutes: Routes = [
+  ...
+  { path: 'not-found', component: PageNotFoundComponent},
+  { path: '**', redirectTo: '/not-found'}
+];
+...
+```
+
