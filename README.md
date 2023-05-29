@@ -1443,3 +1443,54 @@ export class EditServerComponent implements OnInit {
   ...
 }
 ```
+
+### Setting up Child (Nested) Routes
+
+In `AppModule`, where we defined the routes, we can see some duplication. We
+can fix this by defining parent routes e.g. `servers` and child routes e.g
+`:id`.
+
+```typescript
+...
+const appRoutes: Routes = [
+  { path: '', component: HomeComponent },
+  {
+    path: 'users', component: UsersComponent, children: [
+      { path: ':id/:name', component: UserComponent }
+    ]
+  },
+  {
+    path: 'servers', component: ServersComponent, children: [
+      { path: ':id', component: ServerComponent },
+      { path: ':id/edit', component: EditServerComponent }
+    ]
+  },
+];
+...
+```
+
+For the app to work we need to replace `<app-user>` and `<app-server>` with
+`<router-outlet>` in the templates `users.component.html` and
+`servers.component.html`, because the child routes need a separate outlet.
+Below you can find the applied change for the template `user.component.html`. 
+
+```html
+<div class="row">
+  <div class="col-xs-12 col-sm-4">
+    <div class="list-group">
+      <a
+        [routerLink]="['/users', user.id, user.name]"
+        href="#"
+        class="list-group-item"
+        *ngFor="let user of users">
+        {{ user.name }}
+      </a>
+    </div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
+    <!-- <app-user></app-user> -->
+    <router-outlet></router-outlet>
+  </div>
+</div>
+```
+
