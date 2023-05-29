@@ -2,10 +2,10 @@
 <p>Manage your Servers and Users.</p>
 <button class="btn btn-primary" (click)="onLoadServers()">Load Servers</button>
 <!-- passing query parameter and fragments programmatically -->
-<button class="btn btn-primary" (click)="onLoadServer(1)">Load Server 1</button>
+<button class="btn btn-primary" (click)="onLoadServer(1)">Edit Server 1</button>
 <!-- passing query parameter and fragments using RouterLink -->
 <button 
     class="btn btn-primary" 
     [routerLink]="['/servers', 1, 'edit']"
     [queryParams]="{allowEdit: true}"
-    fragment="loading">Load Server 1</button>
+    fragment="loading">Edit Server 1</button>
