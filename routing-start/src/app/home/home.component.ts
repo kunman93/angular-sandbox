@@ -25,4 +25,13 @@ export class HomeComponent implements OnInit {
     // variant 2: navigating using the  path "servers" relative to "this.route"
     this.router.navigate(['servers'], {relativeTo: this.route});
   }
+
+  onLoadServer(id: number) {
+    this.router.navigate(['/servers', id, 'edit'],
+      {
+        queryParams: { allowEdit: true },
+        fragment: 'loading'
+      }
+    )
+  }
 }

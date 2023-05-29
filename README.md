@@ -1343,3 +1343,71 @@ remained, even though the path has changed to `/users/10/Anna`.
 <hr>
 <a [routerLink]="['/users', 10, 'Anna']">Load Anna (10)</a>
 ```
+
+### Passing Query Parameters and Fragments
+
+In AppModule, define a new route.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+
+import { EditServerComponent } from './servers/edit-server/edit-server.component';
+import { RouterModule, Routes } from '@angular/router';
+
+const appRoutes: Routes = [
+  ...
+  { path: 'servers/:id/edit', component: EditServerComponent },
+];
+
+@NgModule({
+  ...
+  imports: [
+    ...
+    RouterModule.forRoot(appRoutes)
+  ],
+  ...
+})
+export class AppModule { }
+```
+
+There are two ways to pass query parameters and fragments as shown below.
+
+```html
+...
+<!-- passing query parameter and fragments programmatically -->
+<button class="btn btn-primary" (click)="onLoadServer(1)">Load Server 1</button>
+<!-- passing query parameter and fragments using RouterLink -->
+<button 
+    class="btn btn-primary" 
+    [routerLink]="['/servers', 1, 'edit']"
+    [queryParams]="{allowEdit: true}"
+    fragment="loading">Load Server 1</button>
+```
+
+```typescript
+import { OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+
+export class HomeComponent implements OnInit {
+
+  constructor(
+    private router: Router,
+    ...
+  ) { }
+
+  ngOnInit() {
+  }
+
+  ...
+  onLoadServer(id: number) {
+    this.router.navigate(['/servers', id, 'edit'],
+      {
+        queryParams: { allowEdit: true },
+        fragment: 'loading'
+      }
+    )
+  }
+}
+```
