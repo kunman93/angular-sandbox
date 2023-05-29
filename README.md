@@ -1411,3 +1411,35 @@ export class HomeComponent implements OnInit {
   }
 }
 ```
+
+The query parameter can then be retrieved by using `ActivatedRoute` inside the
+component e.g.  EditServerComponent, which is loaded .
+
+```typescript
+import { OnInit } from '@angular/core';
+
+import { ServersService } from '../servers.service';
+import { ActivatedRoute } from '@angular/router';
+
+export class EditServerComponent implements OnInit {
+  ...
+
+  constructor(
+    private serversService: ServersService,
+    private route: ActivatedRoute) { }
+
+  ngOnInit() {
+    console.log(this.route.snapshot.queryParams);
+    console.log(this.route.snapshot.fragment);
+    var queryParameters = undefined;
+    var fragment = undefined;
+    this.route.queryParams.subscribe((queryParams) => queryParameters = queryParams);
+    this.route.fragment.subscribe((f) => fragment = f);
+    console.log(queryParameters);
+    console.log(fragment);
+    ...
+  }
+
+  ...
+}
+```

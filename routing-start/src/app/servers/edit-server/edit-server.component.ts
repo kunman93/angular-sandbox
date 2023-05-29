@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { ServersService } from '../servers.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-edit-server',
@@ -12,9 +13,19 @@ export class EditServerComponent implements OnInit {
   serverName = '';
   serverStatus = '';
 
-  constructor(private serversService: ServersService) { }
+  constructor(
+    private serversService: ServersService,
+    private route: ActivatedRoute) { }
 
   ngOnInit() {
+    console.log(this.route.snapshot.queryParams);
+    console.log(this.route.snapshot.fragment);
+    var queryParameters = undefined;
+    var fragment = undefined;
+    this.route.queryParams.subscribe((queryParams) => queryParameters = queryParams);
+    this.route.fragment.subscribe((f) => fragment = f);
+    console.log(queryParameters);
+    console.log(fragment);
     this.server = this.serversService.getServer(1);
     this.serverName = this.server.name;
     this.serverStatus = this.server.status;
