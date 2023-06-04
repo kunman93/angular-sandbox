@@ -1794,3 +1794,139 @@ const appRoutes: Routes = [
 ...
 export class AppRoutingModule { }
 ```
+
+
+### Controlling Navigation with canDeactivate
+
+If a user is e.g. editing `serverName` or `serverStatus` on
+`EditServerComponent` and accidentally clicks "back" or somewhere else, he can
+accidentally navigate away. With `canDeactivate` we can prevent this from
+happening. We therefore define `CanDeactivateGuardService`.
+
+```typescript
+import { ActivatedRouteSnapshot, CanDeactivate, RouterStateSnapshot, UrlTree } from "@angular/router";
+import { Observable } from "rxjs";
+
+// our custom interface
+export interface CanComponentDeactivate {
+    canDeactivate: () => Observable<boolean> | Promise<boolean> | boolean;
+}
+
+// the custom interface `CanComponentDeactivate is wrapped in `CanDeactivate`. 
+export class CanDeactivateGuardService implements CanDeactivate<CanComponentDeactivate> {
+    canDeactivate(
+        component: CanComponentDeactivate,
+        currentRoute: ActivatedRouteSnapshot,
+        currentState: RouterStateSnapshot,
+        nextState?: RouterStateSnapshot
+    ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+        return component.canDeactivate();
+    }
+}
+```
+
+The newly created service needs to be provided in `AppModule`. In
+`AppRoutingModule`, we can then specify on which route the
+`CanDeactivateGuardService` should be applied, in this example
+`EditServerComponent`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+import { CanDeactivateGuardService } from './servers/edit-server/can-deactivate-guard.service';
+
+@NgModule({
+  ... 
+  providers: [..., CanDeactivateGuardService],
+  ...
+})
+export class AppModule { }
+```
+
+```typescript
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
+...
+import { EditServerComponent } from "./servers/edit-server/edit-server.component";
+import { ServerComponent } from "./servers/server/server.component";
+import { ServersComponent } from "./servers/servers.component";
+...
+import { AuthGuardService } from "./auth-guard.service";
+import { CanDeactivateGuardService } from "./servers/edit-server/can-deactivate-guard.service";
+
+const appRoutes: Routes = [
+    ...
+    {
+        path: 'servers', canActivateChild: [AuthGuardService], component: ServersComponent, children: [
+            { path: ':id', component: ServerComponent },
+            { path: ':id/edit', component: EditServerComponent, canDeactivate: [CanDeactivateGuardService] }
+        ]
+    },
+    ...
+];
+
+@NgModule({
+    imports: [
+        RouterModule.forRoot(appRoutes)
+    ],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+`EditServerComponent` needs to implement the method `canDeactivate()` of the
+interface `CanComponentDeactivate`. This method contains the logic, whether we
+should navigate away or not.
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+
+...
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { CanComponentDeactivate } from './can-deactivate-guard.service';
+import { Observable } from 'rxjs';
+
+@Component({
+  selector: 'app-edit-server',
+  templateUrl: './edit-server.component.html',
+  styleUrls: ['./edit-server.component.css']
+})
+export class EditServerComponent implements OnInit, CanComponentDeactivate {
+  ...
+  serverName = '';
+  serverStatus = '';
+  allowEdit = false;
+  changesSaved = false;
+
+  constructor(
+    ...,
+    private ActivatedRoute,
+    private router: Router
+  ) { }
+
+  ...
+  onUpdateServer() {
+    ...
+    this.changesSaved = true;
+    this.router.navigate(['../'], { relativeTo: this.route })
+  }
+
+  // provide logic, whether we are allowed to leave or not
+  canDeactivate(): boolean | Promise<boolean> | Observable<boolean> {
+    if (!this.allowEdit) {
+      return true;
+    }
+
+    if (this.hasServerNameOrStatusChanged() && !this.changesSaved) {
+      return confirm('Do you want to discard the changes?')
+    }
+    return true;
+  }
+
+  private hasServerNameOrStatusChanged(): boolean {
+    return this.serverName !== this.server.name
+      || this.serverStatus !== this.server.status 
+  }
+}
+```
