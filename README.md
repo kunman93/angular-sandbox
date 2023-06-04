@@ -1559,9 +1559,10 @@ export class AppRoutingModule { }
 
 To protect routes with `canActivate` Guard, we need to define an
 `AuthGuardService` which implements the `canActivate` interface. In this
-method, we then call `authService.isAuthenticated()` which is injected through
-constructor injection. The `@Injectable()` decorator is declared, so that the
-`authService` within the `authGuardService` gets injected.
+method, we then call `authService.isAuthenticated()`. The `authService` is
+injected through constructor injection. The `@Injectable()` decorator is
+declared, so that the `authService` within the `authGuardService` gets
+injected.
 
 ```typescript
 import { Injectable } from "@angular/core";
@@ -1711,4 +1712,85 @@ import { AuthService } from './auth.service';
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+```
+
+#### Protecting Child (Nested) Routes with canActivateChild
+
+The route protection above protects the parent route `/servers`. Which means
+that we get redirected to `/`, in case we are not authenticated (see the
+implementation of `canActivate` above). But sometimes we want to only protect
+the child routes. This can be done by using `canActivateChild`.
+
+```typescript
+import { Injectable } from "@angular/core";
+import {
+    ActivatedRouteSnapshot,
+    CanActivate,
+    CanActivateChild,
+    Router,
+    RouterStateSnapshot,
+    UrlTree
+} from "@angular/router";
+import { Observable } from "rxjs";
+import { AuthService } from "./auth.service";
+
+@Injectable()
+export class AuthGuardService implements CanActivate, CanActivateChild {
+    constructor(
+        private authService: AuthService,
+        private router: Router
+    ) { }
+
+    canActivate(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+        return this.authService
+            .isAuthenticated()
+            .then((isAuthenticated: boolean) => {
+                if (isAuthenticated) {
+                    return true;
+                } else {
+                    this.router.navigate(['/']);
+                    return false;
+                }
+            })
+    }
+
+    canActivateChild(
+        childRoute: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+        return this.canActivate(childRoute, state);
+    }
+}
+```
+
+In `AppRoutingModule`, we can use `canActivateChild` instead of `canActivate`.
+
+```typescript
+...
+import { Routes, RouterModule } from "@angular/router";
+import { HomeComponent } from "./home/home.component";
+...
+import { EditServerComponent } from "./servers/edit-server/edit-server.component";
+import { ServerComponent } from "./servers/server/server.component";
+import { ServersComponent } from "./servers/servers.component";
+...
+import { AuthGuardService } from "./auth-guard.service";
+
+const appRoutes: Routes = [
+    { path: '', component: HomeComponent },
+    ...
+    {
+        path: 'servers', canActivateChild: [AuthGuardService], component: ServersComponent, children: [
+            { path: ':id', component: ServerComponent },
+            { path: ':id/edit', component: EditServerComponent }
+        ]
+    },
+    ...
+];
+
+...
+export class AppRoutingModule { }
 ```
