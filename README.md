@@ -1930,3 +1930,58 @@ export class EditServerComponent implements OnInit, CanComponentDeactivate {
   }
 }
 ```
+
+### Passing Static Data to a Route
+
+Static `data` can be passed to a route. Below we are passing a "404: Page not
+found!" message.
+
+```typescript
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
+...
+import { ErrorPageComponent } from "./error-page/error-page.component";
+
+const appRoutes: Routes = [
+    ...
+    { path: 'not-found', component: ErrorPageComponent, data: {message: '404: Page not found!'} },
+    { path: '**', redirectTo: '/not-found' }
+];
+
+@NgModule({
+    imports: [
+        RouterModule.forRoot(appRoutes)
+    ],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+In `ngOnInit` of `ErrorPageComponent`, we retrieve the data which will then be
+displayed.
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Data } from '@angular/router';
+
+@Component({
+  selector: 'app-error-page',
+  templateUrl: './error-page.component.html',
+  styleUrls: ['./error-page.component.css']
+})
+export class ErrorPageComponent implements OnInit {
+  errorMessage: string;
+
+  constructor(private route: ActivatedRoute) { }
+
+  ngOnInit(): void {
+    this.route.data.subscribe((data: Data) => {
+      this.errorMessage = data['message'];
+    })
+  }
+}
+```
+
+```html
+<h4>{{ errorMessage }}</h4>
+```
