@@ -1510,3 +1510,47 @@ const appRoutes: Routes = [
 ...
 ```
 
+### Outsourcing the Route Configuration
+
+Usually, the routing configuration is not done in `AppModule`, instead in
+`AppRoutingModule`. `AppModule` then imports the `AppRoutingModule`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+
+@NgModule({
+  declarations: [
+    ...
+  ],
+  imports: [
+    ...
+    AppRoutingModule
+  ],
+  ...
+})
+export class AppModule { }
+
+```
+
+There is no need to add `declarations` here, because these components are
+already declared in `AppModule`. Make sure to configure the `RouterModule` in
+`imports` with `RouterModule.forRoot(appRoutes)`, in `exports` we export the
+configured RouterModule.
+
+```tyescript
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
+...
+
+const appRoutes: Routes = [...];
+
+@NgModule({
+    imports: [
+        RouterModule.forRoot(appRoutes)
+    ],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
