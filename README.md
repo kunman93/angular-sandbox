@@ -1985,3 +1985,132 @@ export class ErrorPageComponent implements OnInit {
 ```html
 <h4>{{ errorMessage }}</h4>
 ```
+
+### Resolving Dynamic Data with the resolve Guard
+
+Let's say we have to fetch data e.g "Server" before a route can be displayed or
+rendered. We can do this with a resolver. First we define a
+`ServerResolverService`.
+
+```typescript
+import {
+    ActivatedRouteSnapshot,
+    Resolve,
+    RouterStateSnapshot
+} from "@angular/router";
+
+import { Observable } from "rxjs";
+import { ServersService } from "../servers.service";
+import { Injectable } from "@angular/core";
+
+interface Server {
+    id: number,
+    name: string,
+    status: string
+}
+
+@Injectable()
+export class ServerResolverService implements Resolve<Server> {
+    constructor(private serversService: ServersService) {}
+
+    resolve(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Server | Observable<Server> | Promise<Server> {
+        return this.serversService.getServer(+route.params['id'])
+    }
+}
+```
+
+Add the newly created service `ServerResolverService` to the providers in
+`AppModule`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+import { ServerResolverService } from './servers/server/server-resolver.service';
+
+@NgModule({
+  ...
+  providers: [
+    ...
+    ServerResolverService
+  ],
+  ...
+})
+export class AppModule { }
+```
+
+For example the `ServerComponent`, we want to use the `ServerResolverService`,
+we add the `resolve` property, where we map all the resolvers.
+
+```typescript
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
+...
+import { ServerComponent } from "./servers/server/server.component";
+import { ServersComponent } from "./servers/servers.component";
+...
+import { ServerResolverService } from "./servers/server/server-resolver.service";
+
+const appRoutes: Routes = [
+    ...
+    {
+        path: 'servers', canActivateChild: [AuthGuardService], component: ServersComponent, children: [
+            { path: ':id', component: ServerComponent, resolve: {serverFromServerResolverService: ServerResolverService} },
+            ...
+        ]
+    },
+    ...
+];
+
+@NgModule({
+    imports: [
+        RouterModule.forRoot(appRoutes)
+    ],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+In `ngOnInit` of `ServerComponent`, we retrieve the resolved "server" from
+`ServerResolverService`.
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+
+import { ServersService } from '../servers.service';
+import { ActivatedRoute, Data, Params, Router } from '@angular/router';
+
+@Component({
+  selector: 'app-server',
+  templateUrl: './server.component.html',
+  styleUrls: ['./server.component.css']
+})
+export class ServerComponent implements OnInit {
+  server: { id: number, name: string, status: string };
+
+  constructor(
+    private serversService: ServersService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) { }
+
+  ngOnInit() {
+    this.route.data.subscribe((data: Data) => {
+      this.server = data['serverFromServerResolverService']
+    })
+    // var id: number = +this.route.snapshot.params['id'];
+    // this.server = this.serversService.getServer(id);
+
+    // this.route.params.subscribe((params: Params) => {
+    //   this.server = this.serversService.getServer(+params['id']);
+    // });
+  }
+
+  onEdit() {
+    this.router.navigate(['edit'], {relativeTo: this.route, queryParamsHandling: 'preserve'});
+  }
+}
+```
