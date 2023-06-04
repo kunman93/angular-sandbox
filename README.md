@@ -1554,3 +1554,161 @@ const appRoutes: Routes = [...];
 })
 export class AppRoutingModule { }
 ```
+
+### Protecting Routes with canActivate Guard
+
+To protect routes with `canActivate` Guard, we need to define an
+`AuthGuardService` which implements the `canActivate` interface. In this
+method, we then call `authService.isAuthenticated()` which is injected through
+constructor injection. The `@Injectable()` decorator is declared, so that the
+`authService` within the `authGuardService` gets injected.
+
+```typescript
+import { Injectable } from "@angular/core";
+import {
+    ActivatedRouteSnapshot,
+    CanActivate,
+    Router,
+    RouterStateSnapshot,
+    UrlTree
+} from "@angular/router";
+import { Observable } from "rxjs";
+import { AuthService } from "./auth.service";
+
+@Injectable()
+export class AuthGuardService implements CanActivate {
+    constructor(
+        private authService: AuthService,
+        private router: Router
+    ) { }
+
+    canActivate(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+        return this.authService
+            .isAuthenticated()
+            .then((isAuthenticated: boolean) => {
+                if (isAuthenticated) {
+                    return true;
+                } else {
+                    this.router.navigate(['/']);
+                    return false;
+                }
+            })
+    }
+}
+```
+
+In `AuthService`, we define simple methods which "simulate" an authentication
+service.
+
+```typescript
+export class AuthService {
+    isLoggedIn = false;
+
+    isAuthenticated() {
+        return new Promise(
+            (resolve, reject) => {
+                setTimeout(() => {
+                    resolve(this.isLoggedIn),
+                    800
+                });
+            }
+        );
+    }
+
+    login() {
+        this.isLoggedIn = true;
+    }
+
+    logout () {
+        this.isLoggedIn = false;
+    }
+}
+```
+
+The `login` and `logout` methods  are used in `HomeComponent`.
+
+```typescript
+import { ..., OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../auth.service';
+
+...
+export class HomeComponent implements OnInit {
+
+  constructor(
+    ...
+    private authService: AuthService
+  ) { }
+
+  ngOnInit() {
+  }
+
+  onLogin() {
+    this.authService.login();
+  }
+
+  onLogout() {
+    this.authService.logout();
+  }
+
+  ...
+}
+```
+
+```html
+...
+<button class="btn btn-default" (click)="onLogin()">Login</button>
+<button class="btn btn-default" (click)="onLogout()">Logout</button>
+...
+```
+
+In `AppRoutingModule`, the `canActivate` Guard needs to be set for the route
+which needs to be protected e.g. `/servers`.
+
+```typescript
+import { Routes, RouterModule } from "@angular/router";
+import { HomeComponent } from "./home/home.component";
+...
+import { EditServerComponent } from "./servers/edit-server/edit-server.component";
+import { ServerComponent } from "./servers/server/server.component";
+import { ServersComponent } from "./servers/servers.component";
+...
+import { AuthGuardService } from "./auth-guard.service";
+
+const appRoutes: Routes = [
+    { path: '', component: HomeComponent },
+    ...
+    {
+        path: 'servers', canActivate: [AuthGuardService], component: ServersComponent, children: [
+            { path: ':id', component: ServerComponent },
+            { path: ':id/edit', component: EditServerComponent }
+        ]
+    },
+    ...
+];
+
+...
+export class AppRoutingModule { }
+```
+
+For Angular to be able to inject the two newly created services, they need to
+be declared in the `providers`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+import { AuthGuardService } from './auth-guard.service';
+import { AuthService } from './auth.service';
+
+
+@NgModule({
+  ...
+  providers: [ServersService, AuthGuardService, AuthService],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```

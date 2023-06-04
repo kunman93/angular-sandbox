@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-home',
@@ -10,10 +11,19 @@ export class HomeComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
+  }
+
+  onLogin() {
+    this.authService.login();
+  }
+
+  onLogout() {
+    this.authService.logout();
   }
 
   onLoadServers() {
@@ -23,7 +33,7 @@ export class HomeComponent implements OnInit {
     // this.router.navigate(['/servers'])
 
     // variant 2: navigating using the  path "servers" relative to "this.route"
-    this.router.navigate(['servers'], {relativeTo: this.route});
+    this.router.navigate(['servers'], { relativeTo: this.route });
   }
 
   onLoadServer(id: number) {
