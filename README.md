@@ -2210,11 +2210,58 @@ export class HomeComponent implements OnInit, OnDestroy {
       console.log(count);
     }, error => {
       alert(error.message);
+    }, () => {
+        // this block will be reached, when observer.complete() is evoked
+        console.log('customintervalobservable completed');
     });
   }
 
   ngOnDestroy(): void {
     this.observerSubscription.unsubscribe();
   }
+}
+```
+
+### RXJS operators
+
+With RXJS `pipe(...)`, you can chain operators together such as `filter(...)`
+and `map(...)` before reaching the `subscribe(...)` block, when the observer
+emits a value. The operators are the essential pieces that allow complex
+asynchronous code to be easily composed in a declarative manner.
+
+```typescript
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, interval, pipe } from 'rxjs';
+import { Observable } from 'rxjs-compat';
+import { filter, map } from 'rxjs/operators';
+
+@Component({
+    ...
+})
+export class HomeComponent implements OnInit, OnDestroy {
+
+  private observerSubscription: Subscription
+
+  constructor() { }
+
+  ngOnInit() {
+    const customIntervalObservable = new Observable(observer => {
+        ...
+    });
+
+    this.observerSubscription = customIntervalObservable
+      .pipe(
+        filter((count: number) => count > 1),
+        map((count: number) => 'Round: ' + (count + 1)),
+      )
+      .subscribe(count => {
+        console.log(count);
+      }, error => {
+        alert(error.message);
+      }, () => {
+        console.log('customintervalobservable completed');
+      });
+  }
+  ...
 }
 ```
