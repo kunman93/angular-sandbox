@@ -1102,3 +1102,1015 @@ export class NewAccountComponent {
   ...
 }
 ```
+
+## Routing
+
+### Setting up and Loading Routes
+
+To define the routes, an application has, the constant `appRoutes` should be
+declared. The constant should hold an array of multiple routes. The `path` e.g.
+`users` refers to the value, entered in the URL after the domain e.g.
+`http://localhost:4200/`. When a path is reached, an action e.g loading a
+component, should also be declared; the desired action is assigned to
+`component` property. The registration of the routes occurs by passing the
+`appRoutes` to `RouterModule.forRoot(appRoutes)`
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+import { RouterModule, Routes } from '@angular/router';
+
+const appRoutes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: 'users', component: UsersComponent },
+  { path: 'servers', component: ServersComponent },
+];
+
+@NgModule({
+  ...
+  imports: [
+    ...
+    RouterModule.forRoot(appRoutes)
+  ],
+  ...
+})
+export class AppModule { }
+```
+
+To render the currently selected route in `app.component.html`,
+`<router-outlet>` is used.
+
+```html
+ <div class="container">
+  ...
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+```
+
+### Navigating with Router Links
+
+We can set the navigation by assigning a `path` e.g. `/users` to `href` (see
+`app.component.html` below). By doing this, the routes are being loaded
+correctly, however the app is being reloaded/refreshed each time we click on a
+link. This means that the app is being restarted every time we click on a
+navigation; our whole application state will be lost.
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="/">Home</a></li>
+        <li role="presentation"><a href="/servers">Servers</a></li>
+        <li role="presentation"><a href="/users">Users</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+```
+
+The correct way to navigate is by using the `routerLink` directive Angular
+provides; the navigation is handled differently.
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a routerLink="/">Home</a></li>
+        <li role="presentation"><a [routerLink]="['/servers']">Servers</a></li>
+        <li role="presentation"><a [routerLink]="['/users']">Users</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+```
+
+### Styling Active Router Links
+
+`RouterLinkActive` tracks whether the linked route of an element is currently
+active, and allows you to specify one or more CSS classes to add to the element
+when the linked route is active. By default it marks an element as active and
+adds the CSS class if it contains the path you are on or if this link is part
+of the path. That's why the *Home* nav tab is always active, when for example
+*Servers* or *Users* nav tab is selected. To fix this, use
+[routerLinkActiveOptions]="{exact: true}".
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <ul class="nav nav-tabs">
+        <li role="presentation" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"><a [routerLink]="['/']">Home</a></li>
+        <li role="presentation" routerLinkActive="active"><a [routerLink]="['/servers']">Servers</a></li>
+        <li role="presentation" routerLinkActive="active"><a [routerLink]="['/users']">Users</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+```
+
+### Navigating Programmatically using absolute or relative paths
+
+In `home.component.html` we can navigate to `/servers` when clicking on the
+button.
+
+```html
+...
+<button class="btn btn-primary" (click)="onLoadServers()">Load Servers</button>
+```
+
+In `HomeComponent`, the router is injected and used in `onLoadServers()`.
+
+```typescript
+import { ..., OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+
+...
+export class HomeComponent implements OnInit {
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute
+  ) { }
+
+  ngOnInit() {
+  }
+
+  onLoadServers() {
+    // complex calculations
+
+    // variant 1: navigating using the absolute path "/servers"
+    // this.router.navigate(['/servers'])
+
+    // variant 2: navigating using the  path "servers" relative to "this.route"
+    this.router.navigate(['servers'], {relativeTo: this.route});
+  }
+}
+```
+
+### Passing parameter to routes and fetching route parameters reactively
+
+In `appRoutes` constant in AppModule, we define a new route with parameters.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+
+...
+import { RouterModule, Routes } from '@angular/router';
+
+const appRoutes: Routes = [
+  ...
+  { path: 'users/:id/:name', component: UserComponent },
+  ...
+];
+
+@NgModule({
+  ...
+  imports: [
+    ...
+    RouterModule.forRoot(appRoutes)
+  ],
+  ...
+})
+export class AppModule { }
+```
+
+In `UserComponent`, we can fetch the route parameters reactively with
+`ActivatedRoute`. Set for example the path manually to `users/3/Max`.
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
+@Component({
+  selector: 'app-user',
+  templateUrl: './user.component.html',
+  styleUrls: ['./user.component.css']
+})
+export class UserComponent implements OnInit {
+  user: {id: number, name: string};
+
+  constructor(private route: ActivatedRoute) { }
+
+  ngOnInit() {
+    //  this.route.snapshot.params will only be excuted for the first initialization
+    this.user = {
+      id: this.route.snapshot.params['id'],
+      name: this.route.snapshot.params['name'],
+    }
+    // to react to subsequent changes happening in this component, subscribe to route params and set the users id and name.
+    this.route.params
+      .subscribe((params: Params) => {
+        this.user.id = params['id'];
+        this.user.name = params['name'];
+      })
+  }
+}
+```
+
+The corresponding template `user.component.html` looks as follows. If `Load
+Anna (10)` link is clicked, `this.route.params.subscribe` declared above in
+`ngOnInit` will be triggered and the string interpolation values will be
+updated to id = 10 and name = 'Anna'. If the subscribe block wasn't there and
+the link would have been clicked, the id = 3 and name = 'Max' would have still
+remained, even though the path has changed to `/users/10/Anna`.
+
+```html
+<p>User with ID {{user.id}} loaded.</p>
+<p>User name is {{user.name}}</p>
+<hr>
+<a [routerLink]="['/users', 10, 'Anna']">Load Anna (10)</a>
+```
+
+### Passing Query Parameters and Fragments
+
+In AppModule, define a new route.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+
+import { EditServerComponent } from './servers/edit-server/edit-server.component';
+import { RouterModule, Routes } from '@angular/router';
+
+const appRoutes: Routes = [
+  ...
+  { path: 'servers/:id/edit', component: EditServerComponent },
+];
+
+@NgModule({
+  ...
+  imports: [
+    ...
+    RouterModule.forRoot(appRoutes)
+  ],
+  ...
+})
+export class AppModule { }
+```
+
+There are two ways to pass query parameters and fragments as shown below.
+
+```html
+...
+<!-- passing query parameter and fragments programmatically -->
+<button class="btn btn-primary" (click)="onLoadServer(1)">Load Server 1</button>
+<!-- passing query parameter and fragments using RouterLink -->
+<button 
+    class="btn btn-primary" 
+    [routerLink]="['/servers', 1, 'edit']"
+    [queryParams]="{allowEdit: true}"
+    fragment="loading">Load Server 1</button>
+```
+
+```typescript
+import { OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+
+export class HomeComponent implements OnInit {
+
+  constructor(
+    private router: Router,
+    ...
+  ) { }
+
+  ngOnInit() {
+  }
+
+  ...
+  onLoadServer(id: number) {
+    this.router.navigate(['/servers', id, 'edit'],
+      {
+        queryParams: { allowEdit: true },
+        fragment: 'loading'
+      }
+    )
+  }
+}
+```
+
+The query parameter can then be retrieved by using `ActivatedRoute` inside the
+component e.g.  EditServerComponent, which is loaded .
+
+```typescript
+import { OnInit } from '@angular/core';
+
+import { ServersService } from '../servers.service';
+import { ActivatedRoute } from '@angular/router';
+
+export class EditServerComponent implements OnInit {
+  ...
+
+  constructor(
+    private serversService: ServersService,
+    private route: ActivatedRoute) { }
+
+  ngOnInit() {
+    console.log(this.route.snapshot.queryParams);
+    console.log(this.route.snapshot.fragment);
+    var queryParameters = undefined;
+    var fragment = undefined;
+    this.route.queryParams.subscribe((queryParams) => queryParameters = queryParams);
+    this.route.fragment.subscribe((f) => fragment = f);
+    console.log(queryParameters);
+    console.log(fragment);
+    ...
+  }
+
+  ...
+}
+```
+
+### Setting up Child (Nested) Routes
+
+In `AppModule`, where we defined the routes, we can see some duplication. We
+can fix this by defining parent routes e.g. `servers` and child routes e.g
+`:id`.
+
+```typescript
+...
+const appRoutes: Routes = [
+  { path: '', component: HomeComponent },
+  {
+    path: 'users', component: UsersComponent, children: [
+      { path: ':id/:name', component: UserComponent }
+    ]
+  },
+  {
+    path: 'servers', component: ServersComponent, children: [
+      { path: ':id', component: ServerComponent },
+      { path: ':id/edit', component: EditServerComponent }
+    ]
+  },
+];
+...
+```
+
+For the app to work we need to replace `<app-user>` and `<app-server>` with
+`<router-outlet>` in the templates `users.component.html` and
+`servers.component.html`, because the child routes need a separate outlet.
+Below you can find the applied change for the template `user.component.html`. 
+
+```html
+<div class="row">
+  <div class="col-xs-12 col-sm-4">
+    <div class="list-group">
+      <a
+        [routerLink]="['/users', user.id, user.name]"
+        href="#"
+        class="list-group-item"
+        *ngFor="let user of users">
+        {{ user.name }}
+      </a>
+    </div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
+    <!-- <app-user></app-user> -->
+    <router-outlet></router-outlet>
+  </div>
+</div>
+```
+
+### Redirecting and Wildcard Routes
+
+In `appRoutes` in `app.module.ts` we can define a redirect to `/not-found` if
+any invalid route is entered. Make sure that the generic route `**` is the last
+one in the array of routes.
+
+```typescript
+...
+const appRoutes: Routes = [
+  ...
+  { path: 'not-found', component: PageNotFoundComponent},
+  { path: '**', redirectTo: '/not-found'}
+];
+...
+```
+
+### Outsourcing the Route Configuration
+
+Usually, the routing configuration is not done in `AppModule`, instead in
+`AppRoutingModule`. `AppModule` then imports the `AppRoutingModule`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+
+@NgModule({
+  declarations: [
+    ...
+  ],
+  imports: [
+    ...
+    AppRoutingModule
+  ],
+  ...
+})
+export class AppModule { }
+
+```
+
+There is no need to add `declarations` here, because these components are
+already declared in `AppModule`. Make sure to configure the `RouterModule` in
+`imports` with `RouterModule.forRoot(appRoutes)`, in `exports` we export the
+configured RouterModule.
+
+```tyescript
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
+...
+
+const appRoutes: Routes = [...];
+
+@NgModule({
+    imports: [
+        RouterModule.forRoot(appRoutes)
+    ],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+### Protecting Routes with canActivate Guard
+
+To protect routes with `canActivate` Guard, we need to define an
+`AuthGuardService` which implements the `canActivate` interface. In this
+method, we then call `authService.isAuthenticated()`. The `authService` is
+injected through constructor injection. The `@Injectable()` decorator is
+declared, so that the `authService` within the `authGuardService` gets
+injected.
+
+```typescript
+import { Injectable } from "@angular/core";
+import {
+    ActivatedRouteSnapshot,
+    CanActivate,
+    Router,
+    RouterStateSnapshot,
+    UrlTree
+} from "@angular/router";
+import { Observable } from "rxjs";
+import { AuthService } from "./auth.service";
+
+@Injectable()
+export class AuthGuardService implements CanActivate {
+    constructor(
+        private authService: AuthService,
+        private router: Router
+    ) { }
+
+    canActivate(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+        return this.authService
+            .isAuthenticated()
+            .then((isAuthenticated: boolean) => {
+                if (isAuthenticated) {
+                    return true;
+                } else {
+                    this.router.navigate(['/']);
+                    return false;
+                }
+            })
+    }
+}
+```
+
+In `AuthService`, we define simple methods which "simulate" an authentication
+service.
+
+```typescript
+export class AuthService {
+    isLoggedIn = false;
+
+    isAuthenticated() {
+        return new Promise(
+            (resolve, reject) => {
+                setTimeout(() => {
+                    resolve(this.isLoggedIn),
+                    800
+                });
+            }
+        );
+    }
+
+    login() {
+        this.isLoggedIn = true;
+    }
+
+    logout () {
+        this.isLoggedIn = false;
+    }
+}
+```
+
+The `login` and `logout` methods  are used in `HomeComponent`.
+
+```typescript
+import { ..., OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../auth.service';
+
+...
+export class HomeComponent implements OnInit {
+
+  constructor(
+    ...
+    private authService: AuthService
+  ) { }
+
+  ngOnInit() {
+  }
+
+  onLogin() {
+    this.authService.login();
+  }
+
+  onLogout() {
+    this.authService.logout();
+  }
+
+  ...
+}
+```
+
+```html
+...
+<button class="btn btn-default" (click)="onLogin()">Login</button>
+<button class="btn btn-default" (click)="onLogout()">Logout</button>
+...
+```
+
+In `AppRoutingModule`, the `canActivate` Guard needs to be set for the route
+which needs to be protected e.g. `/servers`.
+
+```typescript
+import { Routes, RouterModule } from "@angular/router";
+import { HomeComponent } from "./home/home.component";
+...
+import { EditServerComponent } from "./servers/edit-server/edit-server.component";
+import { ServerComponent } from "./servers/server/server.component";
+import { ServersComponent } from "./servers/servers.component";
+...
+import { AuthGuardService } from "./auth-guard.service";
+
+const appRoutes: Routes = [
+    { path: '', component: HomeComponent },
+    ...
+    {
+        path: 'servers', canActivate: [AuthGuardService], component: ServersComponent, children: [
+            { path: ':id', component: ServerComponent },
+            { path: ':id/edit', component: EditServerComponent }
+        ]
+    },
+    ...
+];
+
+...
+export class AppRoutingModule { }
+```
+
+For Angular to be able to inject the two newly created services, they need to
+be declared in the `providers`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+import { AuthGuardService } from './auth-guard.service';
+import { AuthService } from './auth.service';
+
+
+@NgModule({
+  ...
+  providers: [ServersService, AuthGuardService, AuthService],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+#### Protecting Child (Nested) Routes with canActivateChild
+
+The route protection above protects the parent route `/servers`. Which means
+that we get redirected to `/`, in case we are not authenticated (see the
+implementation of `canActivate` above). But sometimes we want to only protect
+the child routes. This can be done by using `canActivateChild`.
+
+```typescript
+import { Injectable } from "@angular/core";
+import {
+    ActivatedRouteSnapshot,
+    CanActivate,
+    CanActivateChild,
+    Router,
+    RouterStateSnapshot,
+    UrlTree
+} from "@angular/router";
+import { Observable } from "rxjs";
+import { AuthService } from "./auth.service";
+
+@Injectable()
+export class AuthGuardService implements CanActivate, CanActivateChild {
+    constructor(
+        private authService: AuthService,
+        private router: Router
+    ) { }
+
+    canActivate(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+        return this.authService
+            .isAuthenticated()
+            .then((isAuthenticated: boolean) => {
+                if (isAuthenticated) {
+                    return true;
+                } else {
+                    this.router.navigate(['/']);
+                    return false;
+                }
+            })
+    }
+
+    canActivateChild(
+        childRoute: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+        return this.canActivate(childRoute, state);
+    }
+}
+```
+
+In `AppRoutingModule`, we can use `canActivateChild` instead of `canActivate`.
+
+```typescript
+...
+import { Routes, RouterModule } from "@angular/router";
+import { HomeComponent } from "./home/home.component";
+...
+import { EditServerComponent } from "./servers/edit-server/edit-server.component";
+import { ServerComponent } from "./servers/server/server.component";
+import { ServersComponent } from "./servers/servers.component";
+...
+import { AuthGuardService } from "./auth-guard.service";
+
+const appRoutes: Routes = [
+    { path: '', component: HomeComponent },
+    ...
+    {
+        path: 'servers', canActivateChild: [AuthGuardService], component: ServersComponent, children: [
+            { path: ':id', component: ServerComponent },
+            { path: ':id/edit', component: EditServerComponent }
+        ]
+    },
+    ...
+];
+
+...
+export class AppRoutingModule { }
+```
+
+
+### Controlling Navigation with canDeactivate
+
+If a user is e.g. editing `serverName` or `serverStatus` on
+`EditServerComponent` and accidentally clicks "back" or somewhere else, he can
+accidentally navigate away. With `canDeactivate` we can prevent this from
+happening. We therefore define `CanDeactivateGuardService`.
+
+```typescript
+import { ActivatedRouteSnapshot, CanDeactivate, RouterStateSnapshot, UrlTree } from "@angular/router";
+import { Observable } from "rxjs";
+
+// our custom interface
+export interface CanComponentDeactivate {
+    canDeactivate: () => Observable<boolean> | Promise<boolean> | boolean;
+}
+
+// the custom interface `CanComponentDeactivate is wrapped in `CanDeactivate`. 
+export class CanDeactivateGuardService implements CanDeactivate<CanComponentDeactivate> {
+    canDeactivate(
+        component: CanComponentDeactivate,
+        currentRoute: ActivatedRouteSnapshot,
+        currentState: RouterStateSnapshot,
+        nextState?: RouterStateSnapshot
+    ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+        return component.canDeactivate();
+    }
+}
+```
+
+The newly created service needs to be provided in `AppModule`. In
+`AppRoutingModule`, we can then specify on which route the
+`CanDeactivateGuardService` should be applied, in this example
+`EditServerComponent`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+import { CanDeactivateGuardService } from './servers/edit-server/can-deactivate-guard.service';
+
+@NgModule({
+  ... 
+  providers: [..., CanDeactivateGuardService],
+  ...
+})
+export class AppModule { }
+```
+
+```typescript
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
+...
+import { EditServerComponent } from "./servers/edit-server/edit-server.component";
+import { ServerComponent } from "./servers/server/server.component";
+import { ServersComponent } from "./servers/servers.component";
+...
+import { AuthGuardService } from "./auth-guard.service";
+import { CanDeactivateGuardService } from "./servers/edit-server/can-deactivate-guard.service";
+
+const appRoutes: Routes = [
+    ...
+    {
+        path: 'servers', canActivateChild: [AuthGuardService], component: ServersComponent, children: [
+            { path: ':id', component: ServerComponent },
+            { path: ':id/edit', component: EditServerComponent, canDeactivate: [CanDeactivateGuardService] }
+        ]
+    },
+    ...
+];
+
+@NgModule({
+    imports: [
+        RouterModule.forRoot(appRoutes)
+    ],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+`EditServerComponent` needs to implement the method `canDeactivate()` of the
+interface `CanComponentDeactivate`. This method contains the logic, whether we
+should navigate away or not.
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+
+...
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { CanComponentDeactivate } from './can-deactivate-guard.service';
+import { Observable } from 'rxjs';
+
+@Component({
+  selector: 'app-edit-server',
+  templateUrl: './edit-server.component.html',
+  styleUrls: ['./edit-server.component.css']
+})
+export class EditServerComponent implements OnInit, CanComponentDeactivate {
+  ...
+  serverName = '';
+  serverStatus = '';
+  allowEdit = false;
+  changesSaved = false;
+
+  constructor(
+    ...,
+    private ActivatedRoute,
+    private router: Router
+  ) { }
+
+  ...
+  onUpdateServer() {
+    ...
+    this.changesSaved = true;
+    this.router.navigate(['../'], { relativeTo: this.route })
+  }
+
+  // provide logic, whether we are allowed to leave or not
+  canDeactivate(): boolean | Promise<boolean> | Observable<boolean> {
+    if (!this.allowEdit) {
+      return true;
+    }
+
+    if (this.hasServerNameOrStatusChanged() && !this.changesSaved) {
+      return confirm('Do you want to discard the changes?')
+    }
+    return true;
+  }
+
+  private hasServerNameOrStatusChanged(): boolean {
+    return this.serverName !== this.server.name
+      || this.serverStatus !== this.server.status 
+  }
+}
+```
+
+### Passing Static Data to a Route
+
+Static `data` can be passed to a route. Below we are passing a "404: Page not
+found!" message.
+
+```typescript
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
+...
+import { ErrorPageComponent } from "./error-page/error-page.component";
+
+const appRoutes: Routes = [
+    ...
+    { path: 'not-found', component: ErrorPageComponent, data: {message: '404: Page not found!'} },
+    { path: '**', redirectTo: '/not-found' }
+];
+
+@NgModule({
+    imports: [
+        RouterModule.forRoot(appRoutes)
+    ],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+In `ngOnInit` of `ErrorPageComponent`, we retrieve the data which will then be
+displayed.
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Data } from '@angular/router';
+
+@Component({
+  selector: 'app-error-page',
+  templateUrl: './error-page.component.html',
+  styleUrls: ['./error-page.component.css']
+})
+export class ErrorPageComponent implements OnInit {
+  errorMessage: string;
+
+  constructor(private route: ActivatedRoute) { }
+
+  ngOnInit(): void {
+    this.route.data.subscribe((data: Data) => {
+      this.errorMessage = data['message'];
+    })
+  }
+}
+```
+
+```html
+<h4>{{ errorMessage }}</h4>
+```
+
+### Resolving Dynamic Data with the resolve Guard
+
+Let's say we have to fetch data e.g "Server" before a route can be displayed or
+rendered. We can do this with a resolver. First we define a
+`ServerResolverService`.
+
+```typescript
+import {
+    ActivatedRouteSnapshot,
+    Resolve,
+    RouterStateSnapshot
+} from "@angular/router";
+
+import { Observable } from "rxjs";
+import { ServersService } from "../servers.service";
+import { Injectable } from "@angular/core";
+
+interface Server {
+    id: number,
+    name: string,
+    status: string
+}
+
+@Injectable()
+export class ServerResolverService implements Resolve<Server> {
+    constructor(private serversService: ServersService) {}
+
+    resolve(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Server | Observable<Server> | Promise<Server> {
+        return this.serversService.getServer(+route.params['id'])
+    }
+}
+```
+
+Add the newly created service `ServerResolverService` to the providers in
+`AppModule`.
+
+```typescript
+...
+import { NgModule } from '@angular/core';
+...
+import { ServerResolverService } from './servers/server/server-resolver.service';
+
+@NgModule({
+  ...
+  providers: [
+    ...
+    ServerResolverService
+  ],
+  ...
+})
+export class AppModule { }
+```
+
+For example the `ServerComponent`, we want to use the `ServerResolverService`,
+we add the `resolve` property, where we map all the resolvers.
+
+```typescript
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
+...
+import { ServerComponent } from "./servers/server/server.component";
+import { ServersComponent } from "./servers/servers.component";
+...
+import { ServerResolverService } from "./servers/server/server-resolver.service";
+
+const appRoutes: Routes = [
+    ...
+    {
+        path: 'servers', canActivateChild: [AuthGuardService], component: ServersComponent, children: [
+            { path: ':id', component: ServerComponent, resolve: {serverFromServerResolverService: ServerResolverService} },
+            ...
+        ]
+    },
+    ...
+];
+
+@NgModule({
+    imports: [
+        RouterModule.forRoot(appRoutes)
+    ],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+In `ngOnInit` of `ServerComponent`, we retrieve the resolved "server" from
+`ServerResolverService`.
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+
+import { ServersService } from '../servers.service';
+import { ActivatedRoute, Data, Params, Router } from '@angular/router';
+
+@Component({
+  selector: 'app-server',
+  templateUrl: './server.component.html',
+  styleUrls: ['./server.component.css']
+})
+export class ServerComponent implements OnInit {
+  server: { id: number, name: string, status: string };
+
+  constructor(
+    private serversService: ServersService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) { }
+
+  ngOnInit() {
+    this.route.data.subscribe((data: Data) => {
+      this.server = data['serverFromServerResolverService']
+    })
+    // var id: number = +this.route.snapshot.params['id'];
+    // this.server = this.serversService.getServer(id);
+
+    // this.route.params.subscribe((params: Params) => {
+    //   this.server = this.serversService.getServer(+params['id']);
+    // });
+  }
+
+  onEdit() {
+    this.router.navigate(['edit'], {relativeTo: this.route, queryParamsHandling: 'preserve'});
+  }
+}
+```

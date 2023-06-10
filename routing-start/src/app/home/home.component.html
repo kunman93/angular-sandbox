@@ -1,0 +1,13 @@
+<h4>Welcome to Server Manager 4.0</h4>
+<p>Manage your Servers and Users.</p>
+<button class="btn btn-primary" (click)="onLoadServers()">Load Servers</button>
+<button class="btn btn-default" (click)="onLogin()">Login</button>
+<button class="btn btn-default" (click)="onLogout()">Logout</button>
+<!-- passing query parameter and fragments programmatically -->
+<button class="btn btn-primary" (click)="onLoadServer(1)">Edit Server 1</button>
+<!-- passing query parameter and fragments using RouterLink -->
+<button 
+    class="btn btn-primary" 
+    [routerLink]="['/servers', 1, 'edit']"
+    [queryParams]="{allowEdit: true}"
+    fragment="loading">Edit Server 1</button>
