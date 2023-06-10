@@ -2265,3 +2265,122 @@ export class HomeComponent implements OnInit, OnDestroy {
   ...
 }
 ```
+
+### When to use Subjects instead of Observables
+
+`Subject` is an object, which can be subscribed like an `Observable` with the
+difference that it's more active since you can call actively `next(...)` on it
+from outside. In Observable (see e.g. example above), we could only call
+`next(...)` from inside the `Observable` when we created it. If we don't have a
+passive event source, such as an HTTP request or DOM events but something, that
+actively needs to be triggered by us in our application, `Subject` should be
+used. Summary: `Subject` should be used instead of `EventEmitter`, when we are
+using them as cross component event emitters through services, where
+`next(...)` is manually called. You don't use `Subject` instead of
+`EventEmitter` when e.g. `@Output` is used. Below is an example of a cross
+component communication between `UserComponent` and `AppComponent` through
+`UserService`.
+
+#### AppComponent
+
+```typescript
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { UserService } from './services/user.service';
+import { Subscription } from 'rxjs';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit, OnDestroy {
+  userActivated = false;
+  private activatedSubscription: Subscription;
+
+  constructor(private userService: UserService) {}
+
+  ngOnInit() {
+    this.activatedSubscription = this.userService.activatedEmitter
+    .subscribe(didActivate => this.userActivated = didActivate);
+  }
+
+  ngOnDestroy(): void {
+    this.activatedSubscription.unsubscribe() 
+  }
+}
+```
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <a routerLink="/">Home</a> |
+      <a [routerLink]="['user', 1]">
+        User 1
+      </a>
+      ...
+    </div>
+  </div>
+  <hr />
+  <p *ngIf="userActivated">Activated!</p>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+
+```
+
+#### UserComponent
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Params } from '@angular/router';
+import { UserService } from '../services/user.service';
+
+@Component({
+  selector: 'app-user',
+  templateUrl: './user.component.html',
+  styleUrls: ['./user.component.css']
+})
+export class UserComponent implements OnInit {
+  id: number;
+
+  constructor(
+    private route: ActivatedRoute,
+    private userService: UserService) {
+  }
+
+  ngOnInit() {
+    this.route.params.subscribe((params: Params) => {
+      this.id = +params.id;
+    });
+  }
+
+  onActivate() {
+    this.userService.activatedEmitter.next(true);
+  }
+}
+```
+
+```html
+<p>User with <strong>ID {{ id }}</strong> was loaded</p>
+<button class="btn btn-primary" (click)="onActivate()">Activate</button>
+```
+
+#### UserService
+
+`{providedIn: 'root'}` is a shorter and easier version than adding
+`UserService` to the `providers` array in `AppModule`.
+
+```typescript
+import { Injectable } from "@angular/core";
+import { Subject } from "rxjs";
+
+@Injectable({providedIn: 'root'})
+export class UserService {
+    activatedEmitter = new Subject<boolean>();
+}
+```
+
