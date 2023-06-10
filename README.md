@@ -2160,8 +2160,14 @@ export class HomeComponent implements OnInit, OnDestroy {
 ### Building a Custom Observable
 
 Below is an example of a custom observable, which works the same way as the one
-used in the previous example. In the regular `setInteval(...)` method, `next()`
-is called on the `observer` which emits a new value.
+used in the previous example. In the regular `setInterval(...)` method,
+`next(...)` is called on the `observer` which emits a new value. `complete()`
+halts the `observer`, since it's "completed" and therefore no new values will
+be emitted. In the `subscribe(...)` block, we can do some clean when an
+observable is completed. Completed observables don't need to be unsubscribed.
+The `error(...)` method called on the observer, can be used to throw an error
+which can then be handled in the `subscribe(...)` block. Note that
+`observer.error(...)`, stops emitting new values.
 
 ```typescript
 import { Component, OnDestroy, OnInit } from '@angular/core';
@@ -2188,12 +2194,22 @@ export class HomeComponent implements OnInit, OnDestroy {
       let count = 0;
       setInterval(() => {
         observer.next(count);
+
+        if (count === 2) {
+          observer.complete();
+        }
+
+        if (count > 3) {
+          observer.error(new Error('Count is greater 3!'));
+        }
         count++
       }, 1000);
     });
 
     this.observerSubscription = customIntervalObservable.subscribe(count => {
       console.log(count);
+    }, error => {
+      alert(error.message);
     });
   }
 
