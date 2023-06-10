@@ -2114,3 +2114,45 @@ export class ServerComponent implements OnInit {
   }
 }
 ```
+
+## Observables
+
+### Subscribe to / Unsubscribe from an Observable
+
+Below is a `HomeComponent`, which subscribes to an observable `interval(1000)`
+in `ngOnInit()`. When we for example navigate to `UserComponent`, the
+previously subcribed observable still logs the `count` every 1000 ms. Each time
+we navigate back and forth between the `HomeComponent` and `UserComponent`, a
+new observable will be triggered and subscribed. This can lead to memory leaks
+and slow down the application. To prevent this from happening, the subscription
+can be stored in `observerSubscription` in `ngOnInit()`. In `ngOnDestroy()`, we
+then unsubscribe from the subscribed `observerSubscrption`. For the observables
+provided by Angular e.g. `router.params`, there is no need to unsubscribe. All
+theseAngular observables are managed by Angular.
+
+```typescript
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, interval } from 'rxjs';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css']
+})
+export class HomeComponent implements OnInit, OnDestroy {
+  
+  private observerSubscription: Subscription
+  
+  constructor() { }
+
+  ngOnInit() {
+    this.observerSubscription = interval(1000).subscribe(count => {
+      console.log(count);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.observerSubscription.unsubscribe();
+  }
+}
+```
