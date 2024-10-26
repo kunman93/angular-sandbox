@@ -1,0 +1,12 @@
+@import 'variables';
+
+.app-container {
+    @media (min-width: $min-width) {
+        height: 100vh;
+        width: 100vw;
+        
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
