@@ -4,7 +4,6 @@ import { type User } from './user.model';
 
 @Component({
   selector: 'app-user',
-  standalone: true,
   templateUrl: './user.component.html',
   styleUrl: './user.component.css',
 })
